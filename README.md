@@ -15,5 +15,5 @@ Alle Dateien müssen im **selben Ordner** liegen — die Seite lädt die Assets 
 
 ## Wichtig — Sichtbarkeit
 Die Seite ist eine **geschlossene Lernfassung** (`noindex`, „nicht zur öffentlichen Verbreitung").
-`noindex` + kryptische URL ist **kein** echter Zugriffsschutz — wer die URL hat, kommt rein.
-Bei geschützten/nicht paraphrasierten Inhalten: **privates Repo** oder Passwortschutz statt öffentlicher Pages.
+`noindex` 
+
