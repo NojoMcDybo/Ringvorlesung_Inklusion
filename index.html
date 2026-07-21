@@ -282,6 +282,26 @@ html.focusmode.testing .q{box-shadow:0 20px 60px rgba(28,20,12,.45)}
 @media print{#pomo,#kollege,#focus-rite{display:none}}
 @media(max-width:640px){#pomo{top:auto;bottom:14px;right:12px}
   #pomo-panel{top:auto;bottom:100%;margin:0 0 8px}}
+/* ===== Mobile / Touch ===== */
+/* Mascot skaliert mit dem Viewport (sonst deckt er auf kleinen Screens den Inhalt zu) */
+@media(max-width:1024px){#kollege{width:80px;height:98px}}
+@media(max-width:560px){#kollege{width:58px;height:72px}}
+/* Panel per Tap öffnen (Touch hat kein :hover) */
+#pomo.open #pomo-panel{display:block}
+/* Header zweizeilig: Marke + Umschalter oben, Chips scrollen darunter */
+@media(max-width:700px){
+  .bar{flex-wrap:wrap;gap:6px 10px}
+  .bar>strong{font-size:1rem;line-height:1.15;flex:1 1 auto}
+  .toggle{flex:0 0 auto;font-size:.78rem;padding:6px 11px}
+  .chips{order:5;flex-basis:100%;width:100%;padding:2px 0 1px}
+}
+/* etwas mehr Luft: Karten/Optionen komfortabel antippbar */
+@media(max-width:560px){
+  .qcard{padding:15px 16px}
+  .opt{padding:13px 12px}
+  section.modul{padding:40px 0}
+  html.focusmode section.modul,html.focusmode .hero{padding-left:16px;padding-right:16px;margin:14px auto;border-radius:14px}
+}
 
 </style>
 </head>
@@ -706,6 +726,7 @@ const REACT_NO = ["Zurück auf Box 1.", "Nochmal nachlesen.", "Passiert. Weiter.
 const pick = a => a[Math.floor(Math.random()*a.length)];
 let followMode = load("follow", true);   // Taste 'a': Kollege fliegt zu Karten/Fragen (an/aus)
 const focusOn = () => document.documentElement.classList.contains("focusmode");
+const narrow = () => window.innerWidth < 1000;   // Handy + iPad-Portrait: Kollege bleibt in der Ecke statt neben dem Inhalt zu schweben
 
 const LOG = { d: load("log", {}),
   add(x){ const k=new Date().toISOString().slice(0,10);
@@ -736,7 +757,11 @@ function pmSwitch(){ clearInterval(pmInt);
   } else { pmPhase="fokus"; pmRest=PM.fokus*60; setFocus(true,false); kollSay("Weiter. Fokus an."); }
   clearInterval(pmInt); pmLoop(); pmRender();
 }
-$("#pomo-pill").addEventListener("click", ()=> pmRun ? pmStop() : pmStart());
+$("#pomo-pill").addEventListener("click", e=>{      // Play-Kreis = Timer; Rest der Pill = Panel auf/zu (für Touch ohne Hover)
+  if(e.target.closest("#pomo-play")) return pmRun ? pmStop() : pmStart();
+  $("#pomo").classList.toggle("open");
+});
+document.addEventListener("click", e=>{ if(!e.target.closest("#pomo")) $("#pomo").classList.remove("open"); });
 function pmSel(){
   document.querySelectorAll("#pomo-fokus button").forEach(b=>b.classList.toggle("sel", +b.dataset.f===PM.fokus));
   document.querySelectorAll("#pomo-pause button").forEach(b=>b.classList.toggle("sel", +b.dataset.p===PM.pause));
@@ -814,7 +839,7 @@ function pinAbs(){ const r=koll.getBoundingClientRect(); koll.style.position="ab
   koll.style.left=Math.round(r.left+window.scrollX)+"px"; koll.style.top=Math.round(r.top+window.scrollY)+"px";
   koll.style.right="auto"; koll.style.bottom="auto"; homed=false; }
 function besideCard(card){                          // Hippo fliegt neben die angeklickte Karte
-  if(!followMode) return;
+  if(!followMode || narrow()) return;               // Mobile: kein Platz daneben -> er bleibt in der Ecke
   if(typeof aktiv==="undefined" || aktiv!=="quiz") return;
   const cr=card.getBoundingClientRect(), w=koll.offsetWidth, gap=10;
   const ty=cr.top + cr.height/2;
@@ -822,7 +847,7 @@ function besideCard(card){                          // Hippo fliegt neben die an
   walkTo(tx, ty, "stay");
 }
 function besideQuestion(){                           // Hippo fliegt im Selbsttest neben die Frage
-  if(!followMode) return;
+  if(!followMode || narrow()) return;               // Mobile: kein Platz daneben -> er bleibt in der Ecke
   if(typeof aktiv==="undefined" || aktiv!=="quiz") return;
   const q=document.querySelector("#run .q"); if(!q) return;
   const cr=q.getBoundingClientRect(), w=koll.offsetWidth, gap=14;
@@ -843,8 +868,8 @@ function tippFor(q){                                 // milder Tipp: eine falsch
 const CAVE_FX=0.755, CAVE_FY=0.605, EDGE_GAP=36;
 function nearestHome(){ const r=koll.getBoundingClientRect(); const cx=r.left+r.width/2;
   const onLeft = cx < window.innerWidth/2;
-  return { x: onLeft ? (koll.offsetWidth/2 + EDGE_GAP) : (window.innerWidth - koll.offsetWidth/2 - EDGE_GAP),
-           y: Math.round(window.innerHeight*0.5) }; }
+  const y = narrow() ? Math.round(window.innerHeight - koll.offsetHeight/2 - EDGE_GAP) : Math.round(window.innerHeight*0.5);
+  return { x: onLeft ? (koll.offsetWidth/2 + EDGE_GAP) : (window.innerWidth - koll.offsetWidth/2 - EDGE_GAP), y }; }
 function caveTargetViewport(){ const cave=document.querySelector(".habitat-img"); const r=cave&&cave.getBoundingClientRect();
   if(!r || r.height<10) return null; return { x: r.left + r.width*CAVE_FX, y: r.top + r.height*CAVE_FY }; }
 
@@ -881,7 +906,7 @@ function rollIn(dir){                             // Seitenwechsel: rollt ins Bi
   const w=koll.offsetWidth, h=koll.offsetHeight;
   const startX = dir>0 ? -(w+24) : window.innerWidth+24;
   const landX  = dir>0 ? Math.round(window.innerWidth - w - EDGE_GAP) : EDGE_GAP;   // gegenüberliegender Rand
-  const y = Math.round(window.innerHeight*0.5 - h/2);
+  const y = narrow() ? Math.round(window.innerHeight - h - EDGE_GAP) : Math.round(window.innerHeight*0.5 - h/2);  // Mobile: unten landen, nicht mitten im Text
   koll.style.transition="none"; koll.style.top=y+"px"; koll.style.right="auto"; koll.style.bottom="auto"; koll.style.left=startX+"px";
   koll.classList.toggle("faceR", dir>0);         // nach rechts -> Gif invertieren
   const total=Math.abs(landX-startX);
@@ -903,16 +928,17 @@ function rollIn(dir){                             // Seitenwechsel: rollt ins Bi
 }
 function quizEntry(){                              // Sternseite: nach dem Reinrollen schnell nach oben fliegen + Ansage
   clearTimeout(settleT); clearTimeout(reenterT); clearTimeout(bubT);
-  const w=koll.offsetWidth;
-  const targetY=Math.round(window.innerHeight*0.12);
-  const targetX=Math.round(window.innerWidth*0.5 - w/2);
+  const w=koll.offsetWidth, h=koll.offsetHeight, sm=narrow();
+  const hdr=(document.querySelector("header")?.offsetHeight)||60;
+  const targetY=sm ? Math.round(hdr+8) : Math.round(window.innerHeight*0.12);       // Mobile: obere Ecke, damit der Titel lesbar bleibt
+  const targetX=sm ? Math.round(window.innerWidth - w - EDGE_GAP) : Math.round(window.innerWidth*0.5 - w/2);
   koll.style.position="fixed"; koll.style.right="auto"; koll.style.bottom="auto";
   requestAnimationFrame(()=> requestAnimationFrame(()=>{
     koll.style.transition="left .7s cubic-bezier(.4,0,.2,1), top .72s cubic-bezier(.34,1.25,.5,1)";
     koll.style.left=targetX+"px"; koll.style.top=targetY+"px"; }));
   setTimeout(()=>{ koll.style.transition="";
-    kollSay("Jetzt ist Schluss mit lustig. Wir sind in Probeklausur, keinen hat hier was zu sagen!", 10000); }, 780);
-  settleT=setTimeout(goHome, 11200);              // nach der Ansage an die Seite absetzen
+    kollSay("Jetzt ist Schluss mit lustig. Wir sind in Probeklausur, keinen hat hier was zu sagen!", sm?7000:10000); }, 780);
+  settleT=setTimeout(goHome, sm?7600:11200);      // nach der Ansage in die Ecke absetzen
 }
 function pinToPageSide(){                          // an die Seite der SEITE heften (scrollt mit), nicht an den Screen
   const r=koll.getBoundingClientRect();
@@ -926,12 +952,12 @@ function pinToPageSide(){                          // an die Seite der SEITE hef
 function arrive(dest){
   koll.style.transition=""; koll.classList.remove("faceR"); cloudSync();
   if(dest==="cave"){ setImg(SIT); dockToCave(); homed=false; }
-  else if(dest==="home"){ setImg(idleImg()); pinToPageSide(); }
+  else if(dest==="home"){ setImg(idleImg()); if(narrow()){ freeToFixed(); homed=false; } else pinToPageSide(); }  // Mobile: fix in der Ecke, nicht mitscrollen
   else if(dest==="stay"){ setImg(idleImg()); pinAbs(); }   // neben der Karte stehen bleiben
   else { setImg(idleImg()); scheduleHome(); }          // 'free'
 }
 function reenter(){                                // nach Idle-Zeit aus dem Offscreen an den Bildschirmrand laufen
-  if(focusOn()) return;                             // Idee 1: im Fokus bleibt er still
+  if(focusOn()||narrow()) return;                   // im Fokus & auf Mobile bleibt er still (dort fix in der Ecke)
   if(!homed) return; homed=false;
   cancelAnimationFrame(rollRAF); clearTimeout(walkT);
   const w=koll.offsetWidth, h=koll.offsetHeight;
