@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inklusion im Sport — Klausur-Trainer</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+/* ===== TOKEN-BLOCK — hier den gewählten Stil aus reference/design-styles.md einsetzen ===== */
+:root{
+  --bg:#F6EFE3; --bg-2:#FFFDF8; --ink:#2E2318; --muted:#7C6B57;
+  --signal:#B4671E; --accent-2:#8C5A2B; --line:#E4D9C6;
+  --radius:14px;
+  --font-display:"Fraunces",Georgia,serif; --font-body:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --shadow:0 2px 10px rgba(51,38,26,.07);
+}
+/* ===== Ab hier stilunabhängig — arbeitet nur mit den Tokens oben ===== */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.6}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0 0 .4em}
+a{color:var(--signal)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.kicker{color:var(--signal);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
+.beleg{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padding-top:.6em;margin-top:1.4em}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.score{font-family:var(--font-display);font-size:1.6rem}
+
+/* Kopf + Modul-Chips */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding:10px 0}
+.chips{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{scroll-snap-align:center;white-space:nowrap;cursor:pointer;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:.9rem}
+.chip[aria-current="true"]{background:var(--signal);color:var(--bg);border-color:var(--signal);font-weight:600}
+.toggle{margin-left:auto;cursor:pointer;padding:7px 12px;border-radius:999px;border:1px solid var(--line);
+  background:transparent;color:var(--ink);font:inherit;font-size:.85rem}
+.toggle[aria-pressed="true"]{background:var(--signal);color:var(--bg)}
+
+/* Hero */
+.hero{padding:72px 0 40px}
+.hero h1{font-size:clamp(2.4rem,6vw,4.2rem)}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:28px}
+.stat b{display:block;font-family:var(--font-display);font-size:2rem;color:var(--signal)}
+.stat span{color:var(--muted);font-size:.85rem}
+
+/* Module */
+section.modul{padding:56px 0;border-top:1px solid var(--line)}
+.pager{display:flex;justify-content:space-between;margin-top:44px}
+.pager button{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);
+  border-radius:999px;padding:9px 16px;font:inherit}
+
+/* Baustein: Aufdecken */
+details.reveal{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:10px 0;background:var(--bg-2)}
+details.reveal summary{cursor:pointer;font-weight:600;list-style:none}
+details.reveal summary::-webkit-details-marker{display:none}
+.tag{display:inline-block;font-size:.7rem;color:var(--signal);border:1px solid var(--signal);
+  border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:1px}
+
+/* Baustein: Flip-Karten */
+.deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.flip{perspective:900px;height:130px;cursor:pointer}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.flipped .flip-in{transform:rotateY(180deg)}
+.flip-f,.flip-b{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:12px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);backface-visibility:hidden}
+.flip-b{transform:rotateY(180deg);color:var(--signal);font-family:var(--font-display);font-size:1.3rem}
+
+/* Baustein: Lern-/Abfragemodus */
+.quizmode .maskable{filter:blur(6px);cursor:pointer;user-select:none}
+.quizmode .maskable.revealed{filter:none}
+
+/* Quiz */
+.q{border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:12px 0;background:var(--bg-2)}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.opt.ok{border-color:#3ecf8e;background:rgba(62,207,142,.12)}
+.opt.no{border-color:#e8635f;background:rgba(232,99,95,.12)}
+
+/* Mobile: Tabellen zu Karten */
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+@media(max-width:720px){
+  thead{display:none}
+  tr{display:block;border:1px solid var(--line);border-radius:var(--radius);margin:10px 0;padding:6px 10px}
+  td{display:block;border:0;padding:8px 0}
+  td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.72rem;
+    text-transform:uppercase;letter-spacing:.06em}
+  .hero{padding:40px 0 24px}
+}
+
+
+/* --- Warm-Chalk Feinschliff + Bausteine --- */
+.lead{font-size:1.08rem;color:var(--ink);max-width:66ch}
+/* Lebensraum-Szene (Startseite) */
+.hero{padding:44px 0 24px}
+.habitat{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);
+  box-shadow:var(--shadow);margin:10px 0 6px}
+.habitat-img{display:block;width:100%;height:auto}
+.habitat-cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:14px 16px 12px;
+  background:linear-gradient(transparent,rgba(46,35,24,.78));color:#f6efe3;font-size:.84rem;line-height:1.4}
+.note{color:var(--muted);font-size:.9rem;border-left:3px solid var(--line);padding-left:12px}
+.tabhint{color:var(--muted);font-size:.82rem;margin:.1em 0 .7em}
+tr.navrow{cursor:pointer;transition:background .14s}
+tr.navrow:hover{background:color-mix(in srgb,var(--signal) 12%,transparent)}
+.nrgo{display:inline-block;font-weight:700;color:#fff;background:var(--signal);border-radius:7px;padding:2px 9px;font-size:.82rem}
+.themalink{color:var(--accent-2);text-decoration:underline;text-underline-offset:2px}
+tr.navrow:hover .themalink{color:var(--signal)}
+.card{box-shadow:var(--shadow)}
+.howto ol{margin:0;padding-left:20px} .howto li{margin:.35em 0}
+.kern{margin:.4em 0 0;padding-left:20px} .kern li{margin:.5em 0;max-width:70ch}
+h3{margin-top:1.6em}
+.hero h1{letter-spacing:-.01em}
+.stat b{color:var(--accent-2)}
+.chip[aria-current="true"]{color:#fff}
+.opt.ok{border-color:#3a7d44;background:rgba(58,125,68,.14)}
+.opt.no{border-color:#b23b36;background:rgba(178,59,54,.14)}
+/* Medien-Embeds */
+.media{margin:22px 0 4px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:680px){.mgrid{grid-template-columns:1fr}}
+.embed{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.spotify{border-radius:12px;border:1px solid var(--line)}
+figure{margin:0} figcaption{color:var(--muted);font-size:.82rem;margin-top:6px}
+/* Karteikarten: passen sich der Textlaenge an (kein Abschneiden) */
+.deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-items:start}
+.qcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);
+  box-shadow:var(--shadow);padding:14px 15px;cursor:pointer;transition:border-color .18s}
+.qcard:hover{border-color:var(--signal)}
+.qcard .qc-front{font-weight:600;line-height:1.35}
+.qcard .qc-front::after{content:" ▸";color:var(--signal);font-weight:700}
+.qcard .qc-back{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+  color:var(--accent-2);line-height:1.42;display:none;cursor:pointer;text-decoration:none}
+.qcard.open .qc-back{display:block}
+.qcard .qc-back:hover{color:var(--signal)}
+.qc-src{display:block;margin-top:6px;font-size:.74rem;color:var(--signal);font-weight:600}
+.qcard.open .qc-front{color:var(--muted);font-weight:500}
+.qcard.open .qc-front::after{content:""}
+/* A11y */
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+
+
+/* ---------- Trainer ---------- */
+.trainer{display:grid;gap:14px}
+.due{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.due b{font-family:var(--font-display);font-size:2rem;color:var(--signal);line-height:1}
+.boxes{display:flex;gap:6px}
+.box{flex:1;text-align:center;padding:8px 4px;border:1px solid var(--line);border-radius:8px;font-size:.75rem;color:var(--muted)}
+.box b{display:block;font-size:1.1rem;color:var(--ink)}
+.conf{display:flex;gap:8px;margin:10px 0}
+.conf button{flex:1;cursor:pointer;padding:9px;border-radius:10px;border:1px solid var(--line);
+  background:transparent;color:var(--ink);font:inherit;font-size:.85rem}
+.conf button:hover{border-color:var(--signal)}
+.verdict{padding:10px 12px;border-radius:10px;margin-top:10px;font-size:.88rem;border:1px solid var(--line)}
+.verdict.danger{border-color:#e8635f;background:rgba(232,99,95,.12)}
+.verdict.good{border-color:#3ecf8e;background:rgba(62,207,142,.10)}
+.verdict.lucky{border-color:#e0b341;background:rgba(224,179,65,.10)}
+.timer{font-family:var(--font-display);font-size:1.5rem;color:var(--signal);
+  position:sticky;top:60px;float:right}
+.timer.warn{color:#e8635f}
+.weak td{font-size:.85rem}
+.weak .hot{color:#e8635f;font-weight:700}
+.kbd{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+
+/* ---------- Druck: aus der Lernseite wird der Lernzettel ---------- */
+@media print{
+  header,.chips,.toggle,.pager,.trainer,.conf,.timer,button{display:none!important}
+  body{background:#fff;color:#000;font-size:10.5pt}
+  .card,details.reveal{border:1px solid #999;break-inside:avoid;background:#fff}
+  details.reveal[open] .body,details.reveal .body{display:block!important;filter:none!important}
+  details.reveal summary{font-weight:700}
+  .maskable{filter:none!important}
+  .beleg{font-size:8.5pt;color:#444}
+  section.modul{page-break-after:always}
+}
+
+
+/* ===== Pomodoro-Pill (oben rechts) ===== */
+#pomo{position:fixed;top:64px;right:16px;z-index:45;font-family:var(--font-body)}
+#pomo-pill{display:flex;align-items:center;gap:11px;cursor:pointer;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:999px;padding:6px 18px 6px 6px;
+  box-shadow:0 8px 24px rgba(51,38,26,.14);font:inherit}
+#pomo-play{width:34px;height:34px;border-radius:50%;background:var(--signal);color:#fff;
+  display:grid;place-items:center;font-size:.82rem;flex:none;line-height:1}
+#pomo-pill.run #pomo-play{background:var(--accent-2)}
+#pomo-time{font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--ink);
+  line-height:1;font-variant-numeric:tabular-nums}
+#pomo-phase{font-size:.64rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+#pomo.pause #pomo-time{color:var(--muted)}
+#pomo-panel{position:absolute;top:100%;right:0;margin-top:10px;width:212px;display:none;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 16px 44px rgba(51,38,26,.2)}
+#pomo:hover #pomo-panel,#pomo:focus-within #pomo-panel{display:block}
+.pomo-hint{background:#2e2318;color:#f3ead9;font-size:.72rem;padding:8px 13px;margin:0;border-radius:17px 17px 0 0}
+.pomo-body{padding:12px}
+.pomo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pomo-grid button{cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:12px;padding:12px 0;font:inherit;font-size:1rem;font-weight:600;transition:all .14s}
+.pomo-grid button:hover{border-color:var(--signal)}
+.pomo-grid button.sel{background:var(--signal);color:#fff;border-color:var(--signal)}
+.pomo-label{font-size:.62rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin:12px 0 8px}
+.pomo-foot{display:flex;gap:8px;margin-top:13px}
+.pomo-foot button{flex:1;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);
+  border-radius:10px;padding:8px 0;font:inherit;font-size:.72rem;transition:all .14s}
+.pomo-foot button:hover{color:var(--ink);border-color:var(--signal)}
+.pomo-foot button.on{background:var(--signal);color:#fff;border-color:var(--signal)}
+#pomo-panel::before{content:"";position:absolute;left:0;right:0;top:-14px;height:16px}  /* Hover-Brücke: überbrückt die Lücke zur Pill (nicht mehr von overflow abgeschnitten) */
+.pomo-wide{width:100%;margin-top:8px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);
+  border-radius:10px;padding:8px 0;font:inherit;font-size:.74rem;transition:all .14s}
+.pomo-wide:hover{color:var(--ink);border-color:var(--signal)}
+.pomo-wide.on{background:var(--signal);color:#fff;border-color:var(--signal)}
+/* sauberer Seitenwechsel */
+@keyframes pagein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+section.modul{animation:pagein .34s ease both}
+.hero{animation:pagein .34s ease both}
+/* Fokus-Modus: nur der Hintergrund wird dunkel — KEIN Schleier über dem Inhalt.
+   Der Lesebereich bleibt eine helle Fläche, die auf dem dunklen Hintergrund schwebt. */
+html.focusmode,html.focusmode body{background:#1e1610}
+html.focusmode section.modul,html.focusmode .hero{background:var(--bg);border-top:0;
+  border-radius:18px;margin:26px auto;padding-top:40px;padding-bottom:48px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45)}
+html.focusmode header{background:color-mix(in srgb,#1e1610 92%,transparent);opacity:.36;transition:opacity .3s}
+html.focusmode header:hover{opacity:1}
+html.focusmode .bar strong{color:#efe4d2}
+html.focusmode .bar .chip:not([aria-current="true"]){color:#cdbca3;border-color:#3b3022}
+html.focusmode .toggle{color:#cdbca3;border-color:#3b3022}
+/* ===== Kollege (frei beweglich) ===== */
+#kollege{position:fixed;right:24px;bottom:20px;width:96px;height:118px;z-index:50;
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#kollege.dragging{cursor:grabbing}
+#kollege #koll-img{width:100%;height:100%;object-fit:contain;object-position:bottom;display:block;
+  pointer-events:none;filter:drop-shadow(0 6px 7px rgba(51,38,26,.30))}
+#kollege.faceR #koll-img{transform:scaleX(-1)}
+/* Quizseite: Wolke unter dem Hippo + sanftes Schweben (statt Watscheln) */
+#koll-cloud{position:absolute;left:50%;bottom:-12px;width:132%;height:auto;transform:translateX(-50%);
+  display:none;pointer-events:none;z-index:-1;filter:drop-shadow(0 5px 6px rgba(51,38,26,.16))}
+#kollege.onCloud #koll-cloud{display:block}
+#kollege.onCloud #koll-img{animation:floaty 2.4s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+#koll-badge{position:absolute;top:-2px;right:-2px;background:#b23b36;color:#fff;border-radius:999px;
+  font-size:.66rem;font-weight:700;padding:1px 6px;display:none}
+#kollege[data-hungry="1"] #koll-badge{display:block}
+#koll-bubble{position:absolute;bottom:calc(100% - 6px);right:6px;max-width:250px;width:max-content;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:9px 13px;
+  font-size:.82rem;line-height:1.35;color:var(--ink);box-shadow:0 10px 30px rgba(51,38,26,.18);
+  opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;pointer-events:none}
+#koll-bubble.show{opacity:1;transform:translateY(0)}
+#kollege.bubR #koll-bubble{left:6px;right:auto}
+#kollege.bounce img{animation:kbounce .5s}
+@keyframes kbounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}}
+/* ===== Fokus-Modus: tiefer als nur Vignette ===== */
+/* Idee 1 — im Fokus keine peripheren Zappel-Animationen */
+html.focusmode #kollege.bounce img{animation:none}
+/* Idee 3 — Tunnel: im laufenden Selbsttest nur die aktuelle Frage zeigen */
+html.focusmode.testing .pretest{display:none}
+html.focusmode.testing .trainer > :not(#run){display:none}
+html.focusmode.testing header{opacity:0}
+html.focusmode.testing header:hover{opacity:1}
+html.focusmode.testing #run{max-width:760px;margin:0 auto}
+html.focusmode.testing .q{box-shadow:0 20px 60px rgba(28,20,12,.45)}
+/* Idee 4 — Übergangs-Ritual (Atemzug) */
+#focus-rite{position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+  background:rgba(20,14,8,.86);opacity:0;transition:opacity .45s;pointer-events:none}
+#focus-rite.show{opacity:1;pointer-events:auto}
+#focus-rite .breath{width:96px;height:96px;border-radius:50%;transform:scale(.5);
+  background:radial-gradient(circle at 50% 42%, rgba(244,229,204,.95), rgba(180,103,30,.45));
+  box-shadow:0 0 70px rgba(244,224,190,.55)}
+#focus-rite.run .breath{animation:breathe 2.2s ease-in-out forwards}
+@keyframes breathe{0%{transform:scale(.5);opacity:.65}55%{transform:scale(1.28);opacity:1}100%{transform:scale(1.06);opacity:.95}}
+#focus-rite .rite-txt{position:absolute;transform:translateY(150px);color:#f4ead6;font-family:var(--font-display);
+  font-size:1.06rem;letter-spacing:.02em;opacity:.92}
+#focus-rite .rite-skip{position:absolute;bottom:26px;color:#caa;color:#c9b79c;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+@media print{#pomo,#kollege,#focus-rite{display:none}}
+@media(max-width:640px){#pomo{top:auto;bottom:14px;right:12px}
+  #pomo-panel{top:auto;bottom:100%;margin:0 0 8px}}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <strong>Inklusion im Sport</strong>
+    <nav class="chips" id="chips" aria-label="Module"></nav>
+    <button class="toggle" id="quizmode" aria-pressed="false">Abfragemodus</button>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<div id="pomo" role="group" aria-label="Pomodoro-Timer">
+  <button id="pomo-pill" aria-label="Timer starten oder pausieren">
+    <span id="pomo-play">▶</span>
+    <span id="pomo-time">45:00</span>
+    <span id="pomo-phase">Fokus</span>
+  </button>
+  <div id="pomo-panel">
+    <p class="pomo-hint">Pomodoro · Maus drüber zum Einstellen</p>
+    <div class="pomo-body">
+      <div class="pomo-grid" id="pomo-fokus">
+        <button data-f="15">15</button><button data-f="25">25</button>
+        <button data-f="45">45</button><button data-f="50">50</button>
+      </div>
+      <p class="pomo-label">Pause</p>
+      <div class="pomo-grid" id="pomo-pause">
+        <button data-p="5">5</button><button data-p="10">10</button>
+      </div>
+      <div class="pomo-foot">
+        <button id="pomo-ambient">♪ Ambient</button>
+        <button id="pomo-backup">Backup ↓</button>
+      </div>
+      <button id="pomo-focus" class="pomo-wide" title="Ganze Seite in den Fokus-Modus (Vignette)">Fokus-Modus</button>
+    </div>
+  </div>
+</div>
+
+<div id="kollege" title="Mit gedrückter Maustaste ziehen">
+  <div id="koll-bubble"></div>
+  <span id="koll-badge">0</span>
+  <img id="koll-img" src="hippo_idle.webp" alt="Kollege — dein Lern-Hippo" draggable="false">
+  <img id="koll-cloud" src="hippo_cloud.webp" alt="" draggable="false">
+</div>
+
+
+<footer class="wrap" style="padding:40px 0;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);margin-top:40px">
+  Interne Lernhilfe für Teilnehmende der Ringvorlesung „Inklusion im Sport" (Universität Münster, SoSe 2026) ·
+  nicht zur öffentlichen Verbreitung. Inhalte paraphrasiert aus den Foliensätzen der Dozierenden; Belege je Abschnitt.
+  Fragen automatisch aus den Foliensätzen erzeugt und stichprobenartig geprüft — im Zweifel gilt der Foliensatz.
+  Videos/Podcast nur eingebettet (YouTube / Spotify), nicht gehostet. Kein Tracking.
+</footer>
+
+
+<script>
+/* ==========================================================================
+   DATEN — hier pflegst du alles. Reihenfolge = Anzeigereihenfolge.
+   ========================================================================== */
+
+const META = {"titel": "Inklusion im Sport — Klausur-Trainer", "kicker": "Uni Münster · Ringvorlesung SoSe 2026 · Wissens-Check", "claim": "Alle 12 Sitzungen, belegt aus den Foliensätzen — und ein Trainer, der steuert, was du als Nächstes übst.", "stats": [{"wert": "12", "label": "Sitzungen"}, {"wert": "102", "label": "Prüfungsfragen"}, {"wert": "83", "label": "Karteikarten"}, {"wert": "23.07.", "label": "Wissens-Check"}], "klausurMin": 30, "notenschluessel": [[50, "bestanden"]], "pruefung": "2026-07-23", "musik": {"yt": "", "spotify": ""}};
+
+const MODULE = [{"id": "start", "nr": "Start", "titel": "Übersicht", "kicker": "// Ringvorlesung Inklusion im Sport · Uni Münster · SoSe 2026", "html": "\n<div class=\"habitat\">\n  <img src=\"hoehle.png\" alt=\"Der Lebensraum deines Kollegen — seine Höhle\" class=\"habitat-img\" width=\"1672\" height=\"941\">\n  <p class=\"habitat-cap\">Hier wohnt dein Kollege. Zieh ihn mit gedrückter Maustaste aus der Höhle — dann begleitet er dich über die ganze Seite.</p>\n</div>\n<p class=\"lead\">Alle 12 Sitzungen der Ringvorlesung, aus den Foliensätzen aufbereitet — belegt, abfragbar, mit einem Trainer, der steuert, was als Nächstes dran ist. Zum Wissens-Check am <strong>23.07.</strong> (~30 MC-Fragen).</p>\n<div class=\"card howto\">\n  <h3>So nutzt du die Seite</h3>\n  <ol>\n    <li><strong>Lesen &amp; Aufdecken:</strong> Geh die 12 Sitzungen durch, klapp die Aufdeck-Karten auf. Oben rechts der <em>Abfragemodus</em> verdeckt die Antworten zum aktiven Abfragen.</li>\n    <li><strong>Selbsttest:</strong> Im Modul <em>Selbsttest</em> trainierst du mit Konfidenz-Abfrage — die Seite merkt sich, wo du <em>sicher falsch</em> lagst. Das ist deine Prioritätenliste.</li>\n    <li><strong>Klausurmodus:</strong> Alle Fragen am Stück, mit Uhr, ohne Auflösung — die Generalprobe.</li>\n    <li><strong>Backup:</strong> Dein Fortschritt liegt nur im Browser. Über das Maskottchen &rarr; Plan &rarr; Backup sichern.</li>\n  </ol>\n</div>\n<h3>Semesterüberblick</h3>\n<p class=\"tabhint\">Klick auf eine Zeile springt direkt zur jeweiligen Sitzung.</p>\n<table><thead><tr><th>Nr</th><th>Datum</th><th>Thema</th><th>Vortragende</th></tr></thead><tbody><tr class=\"navrow\" data-go=\"s01\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">01</span></td><td data-label=\"Datum\">16.04</td><td data-label=\"Thema\"><span class=\"themalink\">Konstituierende Sitzung ↗</span></td><td data-label=\"Vortragende\">Duensing-Knop</td></tr><tr class=\"navrow\" data-go=\"s02\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">02</span></td><td data-label=\"Datum\">23.04</td><td data-label=\"Thema\"><span class=\"themalink\">Verhaltensauffälligkeiten im Sport ↗</span></td><td data-label=\"Vortragende\">Henning / Tietjens</td></tr><tr class=\"navrow\" data-go=\"s03\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">03</span></td><td data-label=\"Datum\">30.04</td><td data-label=\"Thema\"><span class=\"themalink\">Emotionale &amp; soziale Förderung (Kompassschule) ↗</span></td><td data-label=\"Vortragende\">Görlich</td></tr><tr class=\"navrow\" data-go=\"s04\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">04</span></td><td data-label=\"Datum\">07.05</td><td data-label=\"Thema\"><span class=\"themalink\">„Skaten statt Ritalin / ADHS – na und?! ↗</span></td><td data-label=\"Vortragende\">Bohn / skate-aid</td></tr><tr class=\"navrow\" data-go=\"s05\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">05</span></td><td data-label=\"Datum\">21.05</td><td data-label=\"Thema\"><span class=\"themalink\">Kognition &amp; Bewegung im Alter ↗</span></td><td data-label=\"Vortragende\">Voelcker-Rehage</td></tr><tr class=\"navrow\" data-go=\"s06\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">06</span></td><td data-label=\"Datum\">11.06</td><td data-label=\"Thema\"><span class=\"themalink\">Fachdidaktische Ansätze für heterogene Lerngruppen ↗</span></td><td data-label=\"Vortragende\">Leineweber</td></tr><tr class=\"navrow\" data-go=\"s07\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">07</span></td><td data-label=\"Datum\">18.06</td><td data-label=\"Thema\"><span class=\"themalink\">Blindenfußball ↗</span></td><td data-label=\"Vortragende\">Winnebeck</td></tr><tr class=\"navrow\" data-go=\"s08\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">08</span></td><td data-label=\"Datum\">25.06</td><td data-label=\"Thema\"><span class=\"themalink\">Sport mit krebskranken Kindern ↗</span></td><td data-label=\"Vortragende\">Boll</td></tr><tr class=\"navrow\" data-go=\"s09\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">09</span></td><td data-label=\"Datum\">02.07</td><td data-label=\"Thema\"><span class=\"themalink\">Handball-Heroes + Special Olympics Volleyball ↗</span></td><td data-label=\"Vortragende\">Schneider / Hermann</td></tr><tr class=\"navrow\" data-go=\"s10\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">10</span></td><td data-label=\"Datum\">09.07</td><td data-label=\"Thema\"><span class=\"themalink\">Teilhabe im Sportunterricht ↗</span></td><td data-label=\"Vortragende\">Jürgens</td></tr><tr class=\"navrow\" data-go=\"s11\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">11</span></td><td data-label=\"Datum\">16.07</td><td data-label=\"Thema\"><span class=\"themalink\">Inklusion &amp; Exklusion im Leistungssport ↗</span></td><td data-label=\"Vortragende\">Konjer</td></tr><tr class=\"navrow\" data-go=\"quiz\" title=\"Zur Sitzung springen\"><td data-label=\"Nr\"><span class=\"nrgo\">12</span></td><td data-label=\"Datum\">23.07</td><td data-label=\"Thema\"><span class=\"themalink\">Wissens-Check + Abschlusssitzung ↗</span></td><td data-label=\"Vortragende\">Duensing-Knop</td></tr></tbody></table>\n<p class=\"note\">Leistungen (Modul 5): Teilnahme · Wissens-Check (~30 MC, 23.07.) · 5-seitiger Reflexionsbericht (Abgabe Mitte September) · Modulabschluss: 60-Min-Klausur.</p>\n", "beleg": "Seminarplan Ringvorlesung Inklusion im Sport, SoSe 2026 (Duensing-Knop)"}, {"id": "s01", "nr": "01", "titel": "Auftakt & Vorlesungskonzept", "kicker": "// Sitzung 01 · 16.04 · Duensing-Knop", "html": "<p class=\"lead\">Rahmen der Ringvorlesung: Inklusion als Beispiel für die Sportwissenschaft als Querschnittswissenschaft — plus Leistungen und Prüfungsform.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was soll am Beispiel Inklusion in der Ringvorlesung deutlich gemacht werden?</summary><div class=\"body maskable\">Dass die Sportwissenschaft eine Querschnittswissenschaft ist.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Prüfungsform (MAP) schließt Modul 5 ab?</summary><div class=\"body maskable\">Eine 60-minütige Klausur.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Worin besteht der zweite Leistungspunkt der Studienleistung?</summary><div class=\"body maskable\">Im Bestehen eines Wissens-Checks am Semesterende mit ca. 30 Multiple-Choice-Fragen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie definiert die Vorlesung (nach Ziemen 2009) Inklusion?</summary><div class=\"body maskable\">Als Überwindung sozialer Ungleichheit, Aussonderung und Marginalisierung, indem alle Menschen in ihrer Vielfalt und Differenz wahrgenommen, wertgeschätzt und anerkannt werden.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche zwei Perspektiven auf Behinderung werden unterschieden?</summary><div class=\"body maskable\">Die medizinische (essentialistische) Perspektive (Behinderung als Krankheit) und die sozialwissenschaftliche Perspektive (Behinderung entsteht in Interaktion/durch Benachteiligung).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Umfang und Abgabetermin des Reflexionsberichts?</summary><div class=\"body maskable\">5-seitiger Reflexionsbericht; Abgabe Mitte September.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie viele Menschen in Deutschland haben einen Grad der Behinderung über 50%?</summary><div class=\"body maskable\">Rund 7,8 Mio. Menschen (ca. 9,4 % der Bevölkerung).</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Ziel der Ringvorlesung ist es, erste Bezüge zu heterogenen Zielgruppen im Sport herzustellen, heterogenitätsspezifische Fragen interdisziplinär zu behandeln und am Beispiel Inklusion die Sportwissenschaft als Querschnittswissenschaft deutlich zu machen.</li><li>Die heterogenitätsspezifischen Fragen sollen interdisziplinär bearbeitet werden, u.a. aus medizinischer, pädagogischer, bewegungswissenschaftlicher, didaktischer, soziologischer, trainingswissenschaftlicher, historischer, ethischer, sportpsychologischer und politologischer Perspektive.</li><li>Die Ringvorlesung ist Teil von Modul 5, das im 4. Fachsemester Vorlesung und Seminar &#x27;Unterrichten im Sport&#x27; und im 5. Fachsemester die Ringvorlesung &#x27;Inklusion im Sport&#x27; umfasst; als Modulabschlussprüfung (MAP) dient eine 60-minütige Klausur.</li><li>Die Studienleistung besteht aus drei Leistungspunkten: Teilnahme an der Vorlesung, Bestehen eines Wissens-Checks mit ca. 30 Multiple-Choice-Fragen am Semesterende und Verfassen eines 5-seitigen Reflexionsberichts.</li><li>Ausprägungen von Heterogenität reichen von Alter, Geschlecht, Kultur und sozialer Herkunft bis zu Motorik, Begabung, Motivation und Sprache und werden von verschiedenen sportwissenschaftlichen Teildisziplinen beleuchtet.</li></ul>", "beleg": "Foliensatz Sitzung 01 (Duensing-Knop) · interne Lernfassung"}, {"id": "s02", "nr": "02", "titel": "Verhaltensauffälligkeiten im Sport", "kicker": "// Sitzung 02 · 23.04 · Henning / Tietjens", "html": "<p class=\"lead\">Was heißt &#x27;auffällig&#x27;? Normbegriffe, Klassifikation (ICD/DSM, dimensional) und was das für den Sportunterricht bedeutet.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wodurch wird bewertet, ob ein Verhalten als &#x27;auffällig&#x27; gilt?</summary><div class=\"body maskable\">Der Maßstab sind kulturelle, gesellschaftliche und soziale Normen; auffällig ist ein nicht erwartetes oder nicht adäquat erscheinendes Verhalten (Fröhlich-Gildhoff, 2013).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche fünf Normbegriffe werden zur Bestimmung von &#x27;normal&#x27; unterschieden?</summary><div class=\"body maskable\">Soziale, statistische, funktionale, ideale und subjektive Norm.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was besagt die statistische Norm?</summary><div class=\"body maskable\">Normal ist, was die Mehrheit kann; bestimmt über die Auftretenswahrscheinlichkeit in großen Populationen, in der Regel unter Annahme einer Normalverteilung.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was leisten ICD und DSM – und was nicht?</summary><div class=\"body maskable\">Sie beschreiben einzelne Störungsbilder anhand der Symptome; sie enthalten nichts zu Ursachen und Therapien.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie unterscheiden sich Prävalenz und Inzidenz?</summary><div class=\"body maskable\">Prävalenz: Anzahl aller Erkrankten in einer Population. Inzidenz: Anzahl neu auftretender Fälle pro Zeiteinheit unter den noch Erkrankbaren.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche zwei Ausnahmen erfordern im Sportunterricht doch besondere Beachtung?</summary><div class=\"body maskable\">Anorexie (welches Körperbild vermittelt wird) und Epilepsie (einige Aktivitäten sind gefährlich/nicht möglich).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was beschreibt die Prävalenz einer psychischen Störung?</summary><div class=\"body maskable\">Anzahl aller Erkrankten geteilt durch die Größe der Population.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was kennzeichnet die ideale Norm?</summary><div class=\"body maskable\">Normal ist, wer einen als wünschenswert/vollkommen definierten Zustand erfüllt.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Warum ist Epilepsie im Sport eine Ausnahme?</summary><div class=\"body maskable\">Sehr selten, aber einige Aktivitäten sind gefährlich oder nicht möglich.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Ein nicht erwartetes oder nicht adäquat erscheinendes Verhalten wird als auffällig bezeichnet; Maßstab der Bewertung sind kulturelle, gesellschaftliche und soziale Normen (Fröhlich-Gildhoff, 2013). Verhaltensauffälligkeiten sind demnach Ereignisse, die den Lehr-Lern-Prozess beeinträchtigen, unterbrechen oder unmöglich machen.</li><li>Was als &#x27;normal&#x27; gilt, lässt sich über fünf Normbegriffe fassen: soziale Norm (Orientierung an der Gruppe), statistische Norm (was die Mehrheit kann), funktionale Norm (Erfüllung vorgegebener Anforderungen), ideale Norm (Orientierung am Ideal) und subjektive Norm (was man selbst für richtig hält).</li><li>Verhaltensstörungen werden über kategoriale Klassifikationssysteme wie den ICD (WHO) und das DSM (APA) klassifiziert; diese beschreiben einzelne Störungsbilder anhand der Symptome, enthalten jedoch nichts zu Ursachen und Therapien. Im ICD-10 stehen psychische und Verhaltensstörungen im Kapitel F (F00-F99).</li><li>Neben der kategorialen nutzt die dimensionale Klassifikation (Petermann et al., 2002) drei Cluster: internalisierte Auffälligkeiten (z.B. sozialer Rückzug, Ängstlich/Depressiv), externalisierte Auffälligkeiten (z.B. dissoziales, aggressives Verhalten, AD(H)S) und gemischte Auffälligkeiten (z.B. soziale Probleme, Aufmerksamkeitsprobleme).</li><li>Für den Sport gilt: Krankheitsbilder kennen und in der Planung berücksichtigen, aber auf individueller Ebene grundsätzlich keine Notwendigkeit, etwas anders zu machen – mit Ausnahmen wie Anorexie (vermitteltes Körperbild) und Epilepsie (einige Aktivitäten gefährlich/nicht möglich).</li></ul>\n  <div class=\"media\">\n    <p class=\"kicker\">// Zusatzmaterial · Learnweb</p>\n    <div class=\"mgrid\">\n      <figure><div class=\"embed\"><iframe src=\"https://www.youtube-nocookie.com/embed/FkmNEjzf2UE\" title=\"Metzer 58 – inklusiver Punkrock aus Münster\" loading=\"lazy\" allowfullscreen></iframe></div>\n        <figcaption>Metzer 58 – inklusiver Punkrock aus Münster</figcaption></figure>\n      <figure><div class=\"embed\"><iframe src=\"https://www.youtube-nocookie.com/embed/ak9maD1cccc\" title=\"Metzer 58 // KIOSK\" loading=\"lazy\" allowfullscreen></iframe></div>\n        <figcaption>Metzer 58 // KIOSK</figcaption></figure>\n    </div>\n  </div>", "beleg": "Foliensatz Sitzung 02 (Henning / Tietjens) · interne Lernfassung"}, {"id": "s03", "nr": "03", "titel": "Emotionale & soziale Förderung (Kompassschule)", "kicker": "// Sitzung 03 · 30.04 · Görlich (Kompassschule)", "html": "<p class=\"lead\">Emotionale und soziale Förderung an einem schulischen Lernort: Förderschwerpunkt, Diagnosekriterien, Intensivpädagogik.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Aus welchen drei Bereichen setzt sich das multiprofessionelle Team der Kompass-Schule zusammen?</summary><div class=\"body maskable\">Sonderpädagogik, Jugendhilfe und Schulpsychologie.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche drei Diagnosekriterien sind beim Förderschwerpunkt emotionale/soziale Entwicklung mindestens zu beachten?</summary><div class=\"body maskable\">Intensität (Zeitdauer/Schweregrad), Ökologie (mind. zwei Settings, eines die Schule) und Integration (spezifische Hilfen für Teilhabe).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche zwei Ziele der Intensivpädagogik nennt Ricking (2016)?</summary><div class=\"body maskable\">Entwicklung bedeutsamer Einstellungen/Verhaltensmuster zur Bewältigung sozialer Anforderungen und emotionale Stabilisierung durch ein positives Selbstkonzept.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie lautet das übergeordnete lang-/kurzfristige Ziel der Förderung?</summary><div class=\"body maskable\">Die Rückführung (in die allgemeine Schule).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wo befindet sich die Kompass-Schule?</summary><div class=\"body maskable\">In Münster Kinderhaus.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>In welche drei Bereiche ist die Schulgemeinschaft unterteilt?</summary><div class=\"body maskable\">Primarstufe, Sekundarstufe und Villa Interim.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Die Kompass-Schule (Standort Münster Kinderhaus) ist ein schulischer Lernort der Stadt Münster mit einem multiprofessionellen Team aus Sonderpädagogik, Jugendhilfe und Schulpsychologie; die Schulgemeinschaft ist in Primarstufe, Sekundarstufe und Villa Interim unterteilt.</li><li>Ein sonderpädagogischer Förderbedarf der emotionalen und sozialen Entwicklung liegt vor, wenn Schüler:innen an der allgemeinen Schule auch mit Hilfe anderer Dienste nicht hinreichend gefördert werden können, sich der Erziehung nachhaltig verschließen oder die eigene bzw. die Entwicklung der Mitschüler:innen erheblich gestört oder gefährdet ist.</li><li>Für die Diagnose sind mindestens drei Kriterien zu beachten: Intensität (längere Zeitdauer und höherer Schweregrad), Ökologie (Symptome in mindestens zwei Settings, davon eines die Schule) und Integration (spezifische Hilfen für gesellschaftliche Teilhabe erforderlich).</li><li>Intensivpädagogische Förderung (§15) richtet sich an eine Gruppe, die durch Classroom-Management und Präventionsprogramme nicht mehr erreicht wird; sie zielt (Ricking 2016) auf bedeutsame Einstellungen und Verhaltensmuster zur Bewältigung sozialer Anforderungen und auf emotionale Stabilisierung durch ein positives Selbstkonzept – mit dem Ziel der Rückführung.</li></ul>", "beleg": "Foliensatz Sitzung 03 (Görlich (Kompassschule)) · interne Lernfassung"}, {"id": "s04", "nr": "04", "titel": "ADHS – na und?! (Skaten statt Ritalin)", "kicker": "// Sitzung 04 · 07.05 · Bohn / skate-aid", "html": "<p class=\"lead\">&#x27;Skaten statt Ritalin&#x27;: ADHS nach ICD-11, Wirkung von Bewegung auf exekutive Funktionen und das skate-aid-Studiendesign.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie ist ADHS nach ICD-11 (6A05) hinsichtlich Dauer und Kernmerkmalen definiert?</summary><div class=\"body maskable\">Als mindestens 6 Monate anhaltendes Muster von Unaufmerksamkeit und/oder Hyperaktivität-Impulsivität, das während der Entwicklungsphase auftritt.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>In wie vielen Umgebungen muss das Verhaltensmuster zur ADHS-Diagnose erkennbar sein?</summary><div class=\"body maskable\">In mehr als einer Umgebung.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie wirkt Methylphenidat neurobiologisch?</summary><div class=\"body maskable\">Durch Reuptake-Inhibition: Hemmung des Rücktransports von Dopamin und Noradrenalin, wodurch die Botenstoffe länger wirken (v.a. im Striatum).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Hypothese zur Wirkung des Skatens auf das Gehirn wird formuliert?</summary><div class=\"body maskable\">Eine verstärkte Reifung des präfrontalen Kortex, der eng mit den exekutiven Funktionen assoziiert ist.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche zwei Tests der exekutiven Funktionen wurden eingesetzt?</summary><div class=\"body maskable\">Der D2-Test und der Stroop-Test.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie ist das Geschlechterverhältnis in schulbasierten ADHS-Studien?</summary><div class=\"body maskable\">Etwa 2:1 (Jungen zu Mädchen); in klinischen Studien 5:1.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was erfasst der Einbeinstand (30 s) auf der Kraftmessplatte?</summary><div class=\"body maskable\">Die Auslenkung des Körperschwerpunkts, also Körperschwankung/Gleichgewicht.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche exekutiven Funktionen sind mit dem präfrontalen Kortex assoziiert?</summary><div class=\"body maskable\">Inhibition, kognitive Flexibilität, Handlungsplanung und Aufmerksamkeit.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Das skate-aid-Projekt unter Federführung von Titus Dittmann richtet sich als Bewegungsangebot an Kinder und Jugendliche mit Verhaltensauffälligkeiten bzw. diagnostizierten Verhaltensstörungen; die Teilnehmenden wurden in der Praxis Dr. Dirksen &amp; Franke in Münster behandelt und gezielt von den Ärzten für das Programm vorgeschlagen.</li><li>ADHS (ICD-11 6A05) ist durch ein mindestens sechs Monate anhaltendes Muster von Unaufmerksamkeit und/oder Hyperaktivität-Impulsivität gekennzeichnet, das während der Entwicklungsphase auftritt, außerhalb normaler altersgemäßer Schwankungen liegt und die akademische, berufliche oder soziale Funktionsfähigkeit erheblich beeinträchtigt.</li><li>Zur Wirksamkeit von Bewegung wird angenommen, dass aerobe Aktivitäten positiv auf die exekutiven Funktionen und damit auf die ADHS-Symptomatik wirken; als Hypothese gilt eine verstärkte Reifung des präfrontalen Kortex, der eng mit den exekutiven Funktionen assoziiert ist.</li><li>Die Pilotstudie prüft mit einer Testbatterie (u.a. Fragebögen zu Selbstwert/Emotionsregulation, D2- und Stroop-Test, Gleichgewichts- und Sprungmessungen) zwei Hypothesen: dass Kinder mit ADHS in motorischen und kognitiven Tests schlechter abschneiden als eine Kontrollgruppe und dass eine 16-wöchige Skateboard-Intervention stärkere Verbesserungen in Kognition, Motorik und Symptomatik bewirkt.</li></ul>", "beleg": "Foliensatz Sitzung 04 (Bohn / skate-aid) · interne Lernfassung"}, {"id": "s05", "nr": "05", "titel": "Kognition & Bewegung im Alter", "kicker": "// Sitzung 05 · 21.05 · Voelcker-Rehage", "html": "<p class=\"lead\">Kognition und Bewegung im Alter: Inklusion im vs. durch Sport, kognitives Altern, Trainingseffekte, Immobilität in der Pflege.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Unterschied &#x27;Inklusion im Sport&#x27; vs. &#x27;Inklusion durch Sport&#x27;?</summary><div class=\"body maskable\">&#x27;Im Sport&#x27; = Teilhabe an den Sportangeboten selbst. &#x27;Durch Sport&#x27; = Sport als Mittel, um Alltag, Wohlbefinden und Selbstständigkeit Älterer zu verbessern.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie unterscheiden sich Integration und Inklusion?</summary><div class=\"body maskable\">Integration = Eingliederung in ein bestehendes System. Inklusion = das System wird so verändert, dass alle Teil des Ganzen werden.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie verändern sich fluide und kristalline Intelligenz im Alter?</summary><div class=\"body maskable\">Fluide Intelligenz (Geschwindigkeit, Flexibilität) nimmt ab; kristalline Intelligenz (Wissen) bleibt länger stabil.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Trainingsform scheint zur Förderung der Kognition am effektivsten?</summary><div class=\"body maskable\">Kombiniertes körperlich-kognitives Training bzw. Ausdauer- plus Koordinations-/Kognitionstraining.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie viele Schritte gehen Pflegeheimbewohner im Mittel pro Tag?</summary><div class=\"body maskable\">Ca. 1007 Schritte pro Tag, bei über 9 Stunden Sitzzeit.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Folgen hat &#x27;Nicht-Inklusion&#x27; Älterer?</summary><div class=\"body maskable\">U.a. soziale Isolation, Verlust von Autonomie/Mobilität, Beeinträchtigung psychischer Gesundheit und Kognition, Stigmatisierung, Probleme bei der Alltagsbewältigung.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie ist das PROCARE-Training zeitlich strukturiert?</summary><div class=\"body maskable\">16 Wochen, 2x pro Woche, je 45 Minuten.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welches Medikament nennt der Foliensatz zur Parkinson-Behandlung?</summary><div class=\"body maskable\">Levodopa (L-Dopa).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Beispiel für anpassbare Inklusion im Sport?</summary><div class=\"body maskable\">Volleyball kann im Sitzen gespielt werden.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Womit ist ein geringerer Aktivitätsradius assoziiert (Polku et al. 2015)?</summary><div class=\"body maskable\">Mit einer höheren Prävalenz depressiver Symptome.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Die Vorlesung unterscheidet &#x27;Inklusion im Sport&#x27; (Teilhabe Älterer/Menschen mit Behinderung an Sportangeboten selbst) und &#x27;Inklusion durch Sport&#x27; (Sport als Mittel, damit sich alltägliches Leben, Wohlbefinden und Selbstständigkeit Älterer verbessern). Inklusion bedeutet, das System so zu verändern, dass alle Teil des Ganzen werden, während Integration lediglich das Eingliedern in ein bestehendes System meint.</li><li>Deutschland altert: Seit 1990 hat sich die Zahl der Menschen ab 65 Jahren um 42% erhöht, und 2060 wird jede dritte Person 65 Jahre und älter sein. Daraus ergibt sich die wachsende Relevanz der Inklusion Älterer im und durch Sport.</li><li>Kognitive Funktionen verändern sich im Alter unterschiedlich: Die fluide Intelligenz (Geschwindigkeit, Flexibilität, Mehrfachaufgaben) nimmt ab, während die kristalline Intelligenz (Wissen, gezieltere Informationsauswahl) länger stabil bleibt. Das Gehirn ist dabei nicht starr, sondern plastisch.</li><li>Körperliche Aktivität wirkt auf das Gehirn und gilt als Schutzfaktor gegen dementielle Erkrankungen. Kombiniertes körperlich-kognitives Training bzw. Ausdauer- plus Koordinations-/Kognitionstraining scheint zur Förderung der Kognition am effektivsten; besonders Kinder und Ältere profitieren.</li><li>In der stationären Pflege zeigt sich ein Teufelskreis aus Immobilität und sinkender körperlicher wie kognitiver Leistungsfähigkeit. Pflegeheimbewohner gehen im Mittel nur ca. 1007 Schritte pro Tag und verbringen über 9 Stunden sitzend; Modellprojekte wie PROCARE und PROGRESS setzen als Primärprävention an.</li></ul>", "beleg": "Foliensatz Sitzung 05 (Voelcker-Rehage) · interne Lernfassung"}, {"id": "s06", "nr": "06", "titel": "Fachdidaktische Ansätze für heterogene Lerngruppen", "kicker": "// Sitzung 06 · 11.06 · Leineweber", "html": "<p class=\"lead\">Fachdidaktik für heterogene Lerngruppen: Heterogenität als Konstrukt, Drei-Ebenen-Modell, erziehender Schulsport, TREE / 6+1.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wofür stehen die vier Buchstaben des TREE-Modells?</summary><div class=\"body maskable\">Teaching Style, Rules/Regulations, Environment und Equipment – vier Stellschrauben zur Anpassung des Sportunterrichts.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was kennzeichnet das &#x27;6+1 Modell eines adaptiven Sportunterrichts&#x27; (Tiemann, 2015)?</summary><div class=\"body maskable\">Es modifiziert und erweitert das TREE-Modell und misst der Lehrkraft und ihrer Haltung hohe Bedeutung bei.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was ist die Grundannahme der reflexiven Koedukation?</summary><div class=\"body maskable\">Formale Chancengleichheit ist nicht gleich echter Chancengerechtigkeit; Ziel ist ein bewusster, reflexiver Umgang mit der Differenzkategorie Geschlecht.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was meint &#x27;Dramatisierung vs. Entdramatisierung&#x27;?</summary><div class=\"body maskable\">Unterschiede werden nicht &#x27;weggeredet&#x27;, sondern teils bewusst zum Thema gemacht (Dramatisierung), teils wird das Gemeinsame sichtbar gemacht (Entdramatisierung).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche drei Vermittlungsprinzipien nennt der erziehende Schulsport?</summary><div class=\"body maskable\">Mehrperspektivität, Reflexion sowie Verständigung und Partizipation.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Nenne didaktische Leitideen zum Umgang mit Fremdheit (Gieß-Stüber, 2005).</summary><div class=\"body maskable\">Begegnung mit dem Fremden, Selbstrelativierung (eigener Ethnozentrismus), Differenzierung der Wahrnehmung und Ent-Differenzierung (transkulturelle Elemente).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was umfasst die Konstrukt-Ebene im Drei-Ebenen-Modell?</summary><div class=\"body maskable\">Didaktische Konstruktionsprinzipien: didaktische Modelle und Stellschrauben.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was meint &#x27;Ent-Differenzierung&#x27; im interkulturellen Lernen?</summary><div class=\"body maskable\">Erkennen transkultureller/universeller Elemente von Kultur, z.B. im Sport.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was kennzeichnet koexistente Lernsituationen (Weichert)?</summary><div class=\"body maskable\">Partner haben eigene Bewegungsaufgaben; der soziale Austausch ist nachrangig.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Inklusiver Unterricht meint das Recht aller Schülerinnen und Schüler, unabhängig von Fähigkeiten, Beeinträchtigungen oder ethnischer, kultureller und sozialer Herkunft, in &#x27;einer Schule für alle&#x27; miteinander und voneinander zu lernen; der inklusive Blick verschiebt die Perspektive vom Kind als Problem hin zum Bildungssystem als Problem.</li><li>Heterogenität ist ein zugeschriebenes Konstrukt, das beim Vergleich von Personengruppen bezüglich einer bestimmten Kategorie entsteht; sie ist kategorien- und standortabhängig, und die unterschiedenen Gruppen gelten bezüglich der Unterscheidungskategorie wiederum als homogen.</li><li>Die inklusive Didaktik wird über das Drei-Ebenen-Modell (Scheid &amp; Friedrich) strukturiert: Ziel-Ebene (Kernlehrplan, Kompetenzen, Standards, Index), Konstrukt-Ebene (didaktische Konstruktionsprinzipien, Modelle, Stellschrauben) und Unterrichtsebene (konkrete Planung mit individuellen Anpassungen).</li><li>Der erziehende Schulsport eignet sich für inklusiven Unterricht: auf Zielebene über Doppelauftrag und Handlungskompetenz, auf Inhaltsebene über die 9 Bewegungsfelder/Sportbereiche und auf Methodenebene über die drei Vermittlungsprinzipien Mehrperspektivität, Reflexion sowie Verständigung und Partizipation.</li><li>Das TREE-Modell (Australian Sports Commission) benennt vier Stellschrauben zur Anpassung: Teaching Style, Rules/Regulations, Environment und Equipment; das &#x27;6+1 Modell&#x27; (Tiemann, 2015) erweitert es und misst der Lehrkraft und ihrer Haltung hohe Bedeutung bei.</li></ul>", "beleg": "Foliensatz Sitzung 06 (Leineweber) · interne Lernfassung"}, {"id": "s07", "nr": "07", "titel": "Blindenfußball in der Schule", "kicker": "// Sitzung 07 · 18.06 · Winnebeck", "html": "<p class=\"lead\">Blindenfußball in der Schule — mit Praxisbezug aus der Nationalmannschaft. Bildlastige Sitzung, entsprechend wenige gesicherte Fakten.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Rolle hat Leon Winnebeck in der Blindenfußball-Nationalmannschaft?</summary><div class=\"body maskable\">Co-Trainer und Hintertorguide der Nationalmannschaft.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche pädagogischen Leitbegriffe rahmen den Foliensatz zu Blindenfußball in der Schule?</summary><div class=\"body maskable\">Heterogenität, Vertrauen, Soziales Lernen, Kooperation, Leistung, Inklusion und Teilhabe.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Die Sitzung 07 zum Thema &#x27;Blindenfußball (in der Schule)&#x27; wird von zwei Referenten mit Praxisbezug gestaltet: Jonas Fuhrmann, ehemaliger Blindenfußball-Nationalspieler, und Leon Winnebeck, Co-Trainer und Hintertorguide der Blindenfußball-Nationalmannschaft.</li><li>Der Foliensatz rahmt Blindenfußball in der Schule über zentrale pädagogische Leitbegriffe: Heterogenität, Vertrauen, Soziales Lernen, Kooperation, Leistung, Inklusion und Teilhabe.</li></ul>", "beleg": "Foliensatz Sitzung 07 (Winnebeck) · interne Lernfassung"}, {"id": "s08", "nr": "08", "titel": "Sport mit krebskranken Kindern", "kicker": "// Sitzung 08 · 25.06 · Boll", "html": "<p class=\"lead\">(Natur-)Sport mit onkologisch erkrankten Kindern: Nachsorge-Angebot, Zieldimensionen des Sports, Versorgungslage, Take-home-Message.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Sportarten umfasst das Angebot &#x27;Natursport in der pädiatrischen Onkologie&#x27;?</summary><div class=\"body maskable\">Schneesport, Wassersport sowie Klettern/Bouldern – als natursportliches Nachsorgeangebot.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Zieldimensionen des Sporttreibens werden genannt?</summary><div class=\"body maskable\">Sportmotorische, affektive, kognitive und ästhetische Ziele sowie soziale und ethische Erziehungsstile.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Ab welcher Dauer gilt ein Mensch nach SGB IX als behindert?</summary><div class=\"body maskable\">Wenn körperliche Funktion, geistige Fähigkeit oder seelische Gesundheit mit hoher Wahrscheinlichkeit länger als 6 Monate vom alterstypischen Zustand abweichen und die Teilhabe beeinträchtigt ist.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Effekte hat körperliche Aktivität bei onkologisch erkrankten Kindern?</summary><div class=\"body maskable\">Positive Effekte auf physische Leistungsfähigkeit (Ausdauer, Kraft, Motorik), Fatigue und Lebensqualität.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was besagt die Take-home-Message zum Umgang mit Heterogenität?</summary><div class=\"body maskable\">Heterogenität akzeptieren und produktiv nutzen; Potentiale über Limitierungen stellen; Sport ist ideales Feld, um Teilhabe zu leben und zu erlernen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Seit wann läuft das Projekt Natursport in der pädiatrischen Onkologie?</summary><div class=\"body maskable\">Neukonzeption seit Wintersemester 2021-22 (IfS Münster + UK Münster).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was bedeutet &#x27;Adaptive Skiing&#x27;?</summary><div class=\"body maskable\">Skifahren für Menschen mit Behinderungen, mit oder ohne spezialisiertes Equipment.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Das Projekt &#x27;Natursport in der pädiatrischen Onkologie&#x27; ist ein natursportliches Nachsorgeangebot (Schneesport, Wassersport, Klettern/Bouldern) für onkologisch erkrankte Kinder und Jugendliche und ihre Familien im Sinne der familienorientierten Rehabilitation, seit Wintersemester 2021-22 am Institut für Sportwissenschaft der Universität Münster und am UK Münster.</li><li>Ziele des Sporttreibens werden in mehreren Dimensionen betrachtet: sportmotorische, affektive, kognitive und ästhetische Ziele sowie soziale und ethische Erziehungsstile; leitend ist der Gedanke &#x27;Sport für Alle&#x27; mit Entfaltung von Fähigkeiten, Stärkung des Selbstvertrauens und (Wieder-)Eingliederung.</li><li>Onkologisch erkrankte Kinder zeigen häufig fehlendes Bewegungsverhalten (durch Nebenwirkungen, fehlende Anreize, fehlende Bewegungsräume, Unsicherheiten, Rückzugverhalten), während körperliche Aktivität positive Effekte auf physische Leistungsfähigkeit, Fatigue und Lebensqualität hat.</li><li>Die sportpädagogisch-sporttherapeutische Versorgung ist in Deutschland lückenhaft: Nur an 25 Kliniken (42%) gibt es Bewegungs- und Sportprogramme während der Akuttherapie und nur in 17 Kliniken (28%) Angebote in der Nachsorge (Gauß &amp; Götte, 2021).</li><li>Die Take-home-Message betont, das Potential der Gruppe zu nutzen, Potentiale über Limitierungen zu stellen und Heterogenität produktiv zu nutzen; Sport gilt als ideales Feld, um Teilhabe zu leben und zu erlernen (&#x27;Inklusion heißt: Vielfalt willkommen heißen&#x27;).</li></ul>", "beleg": "Foliensatz Sitzung 08 (Boll) · interne Lernfassung"}, {"id": "s09", "nr": "09", "titel": "Handball-Heroes & Special Olympics Unified", "kicker": "// Sitzung 09 · 02.07 · Schneider / Hermann", "html": "<p class=\"lead\">Zwei inklusive Praxisprojekte: die Glücksliga (Handball) und Special Olympics Unified (Beachvolleyball Münster).</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Woher stammt die Idee der Glücksliga, und wie heißt sie im Ursprungsland?</summary><div class=\"body maskable\">Aus Dänemark; dort heißt sie &#x27;LykkeLiga&#x27; (Glücksliga).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Seit wann gibt es die Glücksliga Deutschland und für wen?</summary><div class=\"body maskable\">Seit 2021 – sie soll Kindern und Jugendlichen mit Behinderung ermöglichen, ihrem Lieblingssport nachzugehen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was bedeutet Unified Sport und von wem stammt das Konzept?</summary><div class=\"body maskable\">Gemeinsames Sporttreiben von Menschen mit und ohne geistige Behinderung; ein Konzept von Special Olympics.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Aus welchen zwei Rollen setzt sich das Unified-Beachvolleyballteam Münster zusammen?</summary><div class=\"body maskable\">Aus Athlet*innen und Unified-Partner*innen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Rahmenbedingungen sind vor Gründung eines Glücksteams zu klären?</summary><div class=\"body maskable\">Vereinskooperation, Trainingszeiten, Zielgruppe, Name und TrainerInnen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was ist das sportliche Fernziel des Unified-Beachteams Münster?</summary><div class=\"body maskable\">Teilnahme an den World Games 2027 in Chile.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Die Glücksliga geht auf die dänische Idee der &#x27;LykkeLiga&#x27; zurück: Im August 2017 gründete Rikke Aalborg das erste Handballteam für behinderte Kinder. Seit 2021 gibt es die Glücksliga Deutschland, die Kindern und Jugendlichen mit Behinderung ermöglichen soll, ihrem Lieblingssport nachzugehen; die Sparta Heroes sind eine solche inklusive Handballmannschaft.</li><li>Zur Gründung eines Glücksteams müssen zunächst Rahmenbedingungen geklärt werden (Vereinskooperation, Trainingszeiten, Zielgruppe, TrainerInnen, Name), danach folgen Aufgabenverteilung (z.B. Mitgliedsbeiträge, Logo, Förderanträge, Homepage) und Werbung über Flyer, Schulen und Social Media bis zum ersten Training.</li><li>Unified Sport ist ein Konzept von Special Olympics: das gemeinsame Sporttreiben von Menschen mit und ohne geistige Behinderung in verschiedenen Sportarten, von freizeit- bis wettkampforientiert. Das Unified-Beachvolleyballteam Münster besteht aus Athlet*innen und Unified-Partner*innen und wurde im Januar 2024 gegründet.</li><li>Das Unified-Beachvolleyballteam Münster entstand aus einem Projektseminar der Uni Münster zu den World Games 2023 und nahm u.a. 2024 an der Europameisterschaft in Bratislava als Team Germany teil; ein großes Ziel sind die World Games Chile 2027.</li></ul>", "beleg": "Foliensatz Sitzung 09 (Schneider / Hermann) · interne Lernfassung"}, {"id": "s10", "nr": "10", "titel": "Teilhabe: Teilnahme, Teilgabe, Teilsein", "kicker": "// Sitzung 10 · 09.07 · Jürgens", "html": "<p class=\"lead\">Gleichberechtigte Teilhabe im Sportunterricht — die Trias Teilnahme, Teilgabe, Teilsein und Regelmodifikationen.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche drei Begriffe bilden die Trias, mit der gleichberechtigte Teilhabe ausdifferenziert wird?</summary><div class=\"body maskable\">Teilnahme, Teilgabe und Teilsein (im Modell zusätzlich: Nicht-Teilnahme).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Auf welche Autoren geht das Modell &#x27;Gleichberechtigte Teilhabe an Spielen im Sportunterricht&#x27; zurück?</summary><div class=\"body maskable\">Auf Jürgens (2020) in Anlehnung an Pfitzner (2017) und Heimlich (2014).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Über welche Dimensionen wird Teilhabe im Modell betrachtet?</summary><div class=\"body maskable\">Motorische Spielhandlungen, Kommunikation, Beitrag zum Gelingen, Variabilität und Emotionen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>In welchen fünf Bereichen können nach Westermann (2016) Regelmodifikationen ansetzen?</summary><div class=\"body maskable\">Personal, Raum, Zeit, Handlungen und Inventar.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was umfasst Teilhabe nach Boban &amp; Hinz (2006)?</summary><div class=\"body maskable\">Akzeptanz, Wahrnehmung, Wertschätzung eines jeden sowie mit anderen gemeinsam zu lernen und zusammenzuarbeiten.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welches Recht haben nach Tiemann &amp; Hofmann (2010) alle Schüler:innen im Sportunterricht?</summary><div class=\"body maskable\">Das Recht auf eine gleichberechtigte Teilhabe – aufbauend auf der Wertschätzung menschlicher Vielfalt.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche zwei Teilprozesse kennzeichnen die Professionelle Unterrichtswahrnehmung (PUW)?</summary><div class=\"body maskable\">Selektive Aufmerksamkeitssteuerung und wissensbasierte Deutungen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wodurch kann die PUW gefördert werden?</summary><div class=\"body maskable\">Durch Videotraining – u.a. wegen fehlendem Handlungsdruck und Theorie-Praxis-Bezug.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Fehlerarten der Unterrichtswahrnehmung nennt der Foliensatz?</summary><div class=\"body maskable\">Wahrnehmungs-, Erinnerungs-/Wiedergabe- und Interpretations-/Deutungsfehler.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Aufbauend auf der Wertschätzung menschlicher Vielfalt im inklusiven Unterricht haben alle Schülerinnen und Schüler auch im Sportunterricht das Recht auf eine gleichberechtigte Teilhabe (Tiemann &amp; Hofmann, 2010).</li><li>Zur Analyse gleichberechtigter Teilhabe an Spielen im Sportunterricht unterscheidet das Modell die Formen Teilnahme, Teilgabe, Nicht-Teilnahme und Teilsein; es geht auf Jürgens (2020) in Anlehnung an Pfitzner (2017) und Heimlich (2014) zurück.</li><li>Die Teilhabeformen werden im Modell über Dimensionen wie motorische Spielhandlungen, Kommunikation, Beitrag zum Gelingen, Variabilität und Emotionen betrachtet.</li><li>Teilhabe umfasst nach Boban &amp; Hinz (2006) u.a. Akzeptanz, Wahrnehmung und Wertschätzung eines jeden sowie das gemeinsame Lernen und Zusammenarbeiten mit anderen.</li><li>Zur Verbesserung der gleichberechtigten Teilhabe setzen Schüler:innen und Lehrkraft an Regelmodifikationen an – in den Bereichen Personal, Raum, Zeit, Handlungen und Inventar (Westermann, 2016).</li></ul>", "beleg": "Foliensatz Sitzung 10 (Jürgens) · interne Lernfassung"}, {"id": "s11", "nr": "11", "titel": "Inklusion & Exklusion im Leistungssport", "kicker": "// Sitzung 11 · 16.07 · Konjer", "html": "<p class=\"lead\">Inklusion und Exklusion im Leistungssport: Geschlechterklassen, Testosteron, die Wellenbewegung der Regularien und das IOC-Framework.</p><h3>Zum Aufdecken</h3><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Auf welchen zwei Annahmen basiert die Existenz der Geschlechterklassen im Sport?</summary><div class=\"body maskable\">1. Es gibt nur zwei, biologisch eindeutig zu bestimmende Geschlechter. 2. Die Geschlechtszugehörigkeit determiniert die sportliche Leistung. Daher fungieren Geschlechterklassen als Leistungsklassen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Testosteron-Durchschnittswerte nennt der Foliensatz für Männer und Frauen?</summary><div class=\"body maskable\">Männer im Schnitt 17 nmol/l, Frauen meist unter 2 nmol/l (Männer 10-20x höher).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie unterscheidet sich der männliche Leistungsvorteil je nach Sportart?</summary><div class=\"body maskable\">Bei schnellkräftig-explosiven Sportarten besonders hoch (20-50%); je wichtiger die Ausdauer, desto geringer (ca. 10%).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was ist der Kern des Falls Lia Thomas?</summary><div class=\"body maskable\">US-Schwimmerin, gewinnt 2022 nach 2021 abgeschlossener Transition als erste Transgender-Frau die NCAA-Meisterschaft über 500m; im selben Jahr schließt der Weltschwimmverband alle Transfrauen aus, die eine männliche Pubertät durchlaufen haben.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was beinhaltete das IOC-Framework von 2021?</summary><div class=\"body maskable\">Unterstützung von Inklusion, Nicht-Diskriminierung und Gesundheit aller Athlet:innen; Aufhebung der eigenen 5 nmol/l-Regel; Auftrag an die Verbände, eigene inklusive Regelungen auf Basis von Fairness, Nicht-Diskriminierung und Evidenz zu finden.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was bezeichnet DSD (Differences in Sex Development)?</summary><div class=\"body maskable\">Varianten der Geschlechtsentwicklung, bei denen die Entwicklung der Geschlechtsmerkmale (Chromosomen, Gonaden, Hormone, äußere Organe) nicht typisch männlich oder weiblich verläuft.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Um welchen Faktor ist der Testosteronwert bei Männern im Regelfall höher?</summary><div class=\"body maskable\">10-20x höher als bei Frauen.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Wie groß ist der Leistungsunterschied bei Ausdauerleistungen?</summary><div class=\"body maskable\">Geringer, ca. 10 %.</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Welche Sportarten sind Ausnahmen von den Geschlechterklassen?</summary><div class=\"body maskable\">Segeln, Reiten, in Teilen Motorsport (sowie Mannschaftssport vorpubertärer Jahrgänge).</div></details><details class=\"reveal\"><summary><span class=\"tag\">aufdecken</span>Was führte World Aquatics 2023 zusätzlich ein?</summary><div class=\"body maskable\">Eine offene Kategorie für Athlet:innen, die die Regeln nicht erfüllen können/wollen.</div></details><h3>Kernaussagen</h3><ul class='kern'><li>Die Geschlechtertrennung im Sport beruht auf zwei Annahmen: Es gebe nur zwei biologisch eindeutig bestimmbare Geschlechter, und die Geschlechtszugehörigkeit determiniere die sportliche Leistung. Die Geschlechterklassen fungieren daher als Leistungsklassen zur Sicherung der Chancengleichheit, mit wenigen Ausnahmen wie Segeln, Reiten oder Teilen des Motorsports.</li><li>Als Begründung für die Trennung gelten hormonelle Unterschiede: Männer haben im Regelfall eine 10-20x höhere Testosteron-Konzentration (im Schnitt 17 nmol/l gegenüber meist unter 2 nmol/l bei Frauen). Der Leistungsvorteil ist bei schnellkräftig-explosiven Sportarten mit 20-50% besonders hoch, bei Ausdauerleistungen geringer (ca. 10%).</li><li>Die Regularien verlaufen als historische Wellenbewegung: von restriktiv (Phase 1 bis 1992, u.a. IOC-Geschlechtstests ab 1968, Chromosomentests ab 1976) über eine Öffnungsphase (ab 1992, Tests abgeschafft, Stockholm Consensus 2004) bis zu einer erneuten Restriktion (Phase 3 ab 2021).</li><li>Das IOC veröffentlichte 2021 ein &#x27;Framework on Fairness, Inclusion and Non-discrimination&#x27;, hob die eigene 5 nmol/l-Testosteron-Regel auf und wies die Mitgliedsverbände an, eigene inklusive Regelungen auf Basis von Fairness, Nicht-Diskriminierung und wissenschaftlicher Evidenz zu finden. In der Folge verschärften mehrere Verbände (z.B. World Athletics, World Aquatics, World Boxing) ihre Regeln teils bis hin zu genetischen Geschlechtstests.</li><li>Als Fazit zeigt sich, dass der gesellschaftliche Umgang mit Non-Binarität, Transgender und DSD zunehmend offener wird, während der Spitzensport nach relativ inklusiven Regelungen nun einen Trend zur bedingungslosen Exklusion aufweist. Testosteron gilt als DIE Bezugsgröße für Chancengleichheit, und Geschlechtstests kehren zurück.</li></ul>\n  <div class=\"media\">\n    <p class=\"kicker\">// Zusatzmaterial · Learnweb</p>\n    <div class=\"mgrid\">\n      <figure><div class=\"embed\"><iframe src=\"https://www.youtube-nocookie.com/embed/flSS1tjoxf0\" title=\"Last Week Tonight – Trans Athletes\" loading=\"lazy\" allowfullscreen></iframe></div>\n        <figcaption>Last Week Tonight with John Oliver – Trans Athletes (engl.)</figcaption></figure>\n      <figure><iframe class=\"spotify\" src=\"https://open.spotify.com/embed/episode/5JSdoOr8n3ipeid6Ep6Xlf\" width=\"100%\" height=\"152\" loading=\"lazy\" allow=\"encrypted-media\" title=\"Deutschland3000 – Phenix Kühnert\"></iframe>\n        <figcaption>Deutschland3000 – Phenix Kühnert: „Wann ist eine Frau eine Frau?\"</figcaption></figure>\n    </div>\n  </div>", "beleg": "Foliensatz Sitzung 11 (Konjer) · interne Lernfassung"}, {"id": "quiz", "nr": "★", "titel": "Selbsttest & Klausurmodus", "kicker": "// Prüfungssimulation · Wissens-Check", "html": "", "beleg": ""}];
+
+const CARDS = [{"front": "Was soll am Beispiel Inklusion in der Ringvorlesung deutlich gemacht werden?", "back": "Dass die Sportwissenschaft eine Querschnittswissenschaft ist.", "thema": "Querschnittswissenschaft", "modul": "s01"}, {"front": "Welche Prüfungsform (MAP) schließt Modul 5 ab?", "back": "Eine 60-minütige Klausur.", "thema": "Modul 5", "modul": "s01"}, {"front": "Worin besteht der zweite Leistungspunkt der Studienleistung?", "back": "Im Bestehen eines Wissens-Checks am Semesterende mit ca. 30 Multiple-Choice-Fragen.", "thema": "Studienleistung", "modul": "s01"}, {"front": "Wie definiert die Vorlesung (nach Ziemen 2009) Inklusion?", "back": "Als Überwindung sozialer Ungleichheit, Aussonderung und Marginalisierung, indem alle Menschen in ihrer Vielfalt und Differenz wahrgenommen, wertgeschätzt und anerkannt werden.", "thema": "Definition Inklusion", "modul": "s01"}, {"front": "Welche zwei Perspektiven auf Behinderung werden unterschieden?", "back": "Die medizinische (essentialistische) Perspektive (Behinderung als Krankheit) und die sozialwissenschaftliche Perspektive (Behinderung entsteht in Interaktion/durch Benachteiligung).", "thema": "Perspektiven auf Behinderung", "modul": "s01"}, {"front": "Umfang und Abgabetermin des Reflexionsberichts?", "back": "5-seitiger Reflexionsbericht; Abgabe Mitte September.", "thema": "Reflexionsbericht", "modul": "s01"}, {"front": "Wie viele Menschen in Deutschland haben einen Grad der Behinderung über 50%?", "back": "Rund 7,8 Mio. Menschen (ca. 9,4 % der Bevölkerung).", "thema": "Zahlen Inklusion", "modul": "s01"}, {"front": "Wodurch wird bewertet, ob ein Verhalten als 'auffällig' gilt?", "back": "Der Maßstab sind kulturelle, gesellschaftliche und soziale Normen; auffällig ist ein nicht erwartetes oder nicht adäquat erscheinendes Verhalten (Fröhlich-Gildhoff, 2013).", "thema": "Definition", "modul": "s02"}, {"front": "Welche fünf Normbegriffe werden zur Bestimmung von 'normal' unterschieden?", "back": "Soziale, statistische, funktionale, ideale und subjektive Norm.", "thema": "Normbegriffe", "modul": "s02"}, {"front": "Was besagt die statistische Norm?", "back": "Normal ist, was die Mehrheit kann; bestimmt über die Auftretenswahrscheinlichkeit in großen Populationen, in der Regel unter Annahme einer Normalverteilung.", "thema": "Statistische Norm", "modul": "s02"}, {"front": "Was leisten ICD und DSM – und was nicht?", "back": "Sie beschreiben einzelne Störungsbilder anhand der Symptome; sie enthalten nichts zu Ursachen und Therapien.", "thema": "Kategoriale Klassifikation", "modul": "s02"}, {"front": "Wie unterscheiden sich Prävalenz und Inzidenz?", "back": "Prävalenz: Anzahl aller Erkrankten in einer Population. Inzidenz: Anzahl neu auftretender Fälle pro Zeiteinheit unter den noch Erkrankbaren.", "thema": "Prävalenz/Inzidenz", "modul": "s02"}, {"front": "Welche zwei Ausnahmen erfordern im Sportunterricht doch besondere Beachtung?", "back": "Anorexie (welches Körperbild vermittelt wird) und Epilepsie (einige Aktivitäten sind gefährlich/nicht möglich).", "thema": "Bedeutung für den Sport", "modul": "s02"}, {"front": "Was beschreibt die Prävalenz einer psychischen Störung?", "back": "Anzahl aller Erkrankten geteilt durch die Größe der Population.", "thema": "Prävalenz", "modul": "s02"}, {"front": "Was kennzeichnet die ideale Norm?", "back": "Normal ist, wer einen als wünschenswert/vollkommen definierten Zustand erfüllt.", "thema": "Ideale Norm", "modul": "s02"}, {"front": "Warum ist Epilepsie im Sport eine Ausnahme?", "back": "Sehr selten, aber einige Aktivitäten sind gefährlich oder nicht möglich.", "thema": "Sport-Ausnahmen", "modul": "s02"}, {"front": "Aus welchen drei Bereichen setzt sich das multiprofessionelle Team der Kompass-Schule zusammen?", "back": "Sonderpädagogik, Jugendhilfe und Schulpsychologie.", "thema": "Schulischer Lernort", "modul": "s03"}, {"front": "Welche drei Diagnosekriterien sind beim Förderschwerpunkt emotionale/soziale Entwicklung mindestens zu beachten?", "back": "Intensität (Zeitdauer/Schweregrad), Ökologie (mind. zwei Settings, eines die Schule) und Integration (spezifische Hilfen für Teilhabe).", "thema": "Diagnostik", "modul": "s03"}, {"front": "Welche zwei Ziele der Intensivpädagogik nennt Ricking (2016)?", "back": "Entwicklung bedeutsamer Einstellungen/Verhaltensmuster zur Bewältigung sozialer Anforderungen und emotionale Stabilisierung durch ein positives Selbstkonzept.", "thema": "Intensivpädagogik", "modul": "s03"}, {"front": "Wie lautet das übergeordnete lang-/kurzfristige Ziel der Förderung?", "back": "Die Rückführung (in die allgemeine Schule).", "thema": "Ziel der Förderung", "modul": "s03"}, {"front": "Wo befindet sich die Kompass-Schule?", "back": "In Münster Kinderhaus.", "thema": "Standort", "modul": "s03"}, {"front": "In welche drei Bereiche ist die Schulgemeinschaft unterteilt?", "back": "Primarstufe, Sekundarstufe und Villa Interim.", "thema": "Struktur", "modul": "s03"}, {"front": "Wie ist ADHS nach ICD-11 (6A05) hinsichtlich Dauer und Kernmerkmalen definiert?", "back": "Als mindestens 6 Monate anhaltendes Muster von Unaufmerksamkeit und/oder Hyperaktivität-Impulsivität, das während der Entwicklungsphase auftritt.", "thema": "ICD-11-Definition", "modul": "s04"}, {"front": "In wie vielen Umgebungen muss das Verhaltensmuster zur ADHS-Diagnose erkennbar sein?", "back": "In mehr als einer Umgebung.", "thema": "Diagnosekriterium", "modul": "s04"}, {"front": "Wie wirkt Methylphenidat neurobiologisch?", "back": "Durch Reuptake-Inhibition: Hemmung des Rücktransports von Dopamin und Noradrenalin, wodurch die Botenstoffe länger wirken (v.a. im Striatum).", "thema": "Methylphenidat", "modul": "s04"}, {"front": "Welche Hypothese zur Wirkung des Skatens auf das Gehirn wird formuliert?", "back": "Eine verstärkte Reifung des präfrontalen Kortex, der eng mit den exekutiven Funktionen assoziiert ist.", "thema": "Neurobiologische Hypothese", "modul": "s04"}, {"front": "Welche zwei Tests der exekutiven Funktionen wurden eingesetzt?", "back": "Der D2-Test und der Stroop-Test.", "thema": "Testbatterie", "modul": "s04"}, {"front": "Wie ist das Geschlechterverhältnis in schulbasierten ADHS-Studien?", "back": "Etwa 2:1 (Jungen zu Mädchen); in klinischen Studien 5:1.", "thema": "Geschlechterverhältnis", "modul": "s04"}, {"front": "Was erfasst der Einbeinstand (30 s) auf der Kraftmessplatte?", "back": "Die Auslenkung des Körperschwerpunkts, also Körperschwankung/Gleichgewicht.", "thema": "Motorik-Test", "modul": "s04"}, {"front": "Welche exekutiven Funktionen sind mit dem präfrontalen Kortex assoziiert?", "back": "Inhibition, kognitive Flexibilität, Handlungsplanung und Aufmerksamkeit.", "thema": "Exekutive Funktionen", "modul": "s04"}, {"front": "Unterschied 'Inklusion im Sport' vs. 'Inklusion durch Sport'?", "back": "'Im Sport' = Teilhabe an den Sportangeboten selbst. 'Durch Sport' = Sport als Mittel, um Alltag, Wohlbefinden und Selbstständigkeit Älterer zu verbessern.", "thema": "Inklusion im vs. durch Sport", "modul": "s05"}, {"front": "Wie unterscheiden sich Integration und Inklusion?", "back": "Integration = Eingliederung in ein bestehendes System. Inklusion = das System wird so verändert, dass alle Teil des Ganzen werden.", "thema": "Begriffsklärung", "modul": "s05"}, {"front": "Wie verändern sich fluide und kristalline Intelligenz im Alter?", "back": "Fluide Intelligenz (Geschwindigkeit, Flexibilität) nimmt ab; kristalline Intelligenz (Wissen) bleibt länger stabil.", "thema": "Kognitives Altern", "modul": "s05"}, {"front": "Welche Trainingsform scheint zur Förderung der Kognition am effektivsten?", "back": "Kombiniertes körperlich-kognitives Training bzw. Ausdauer- plus Koordinations-/Kognitionstraining.", "thema": "Trainingseffekte", "modul": "s05"}, {"front": "Wie viele Schritte gehen Pflegeheimbewohner im Mittel pro Tag?", "back": "Ca. 1007 Schritte pro Tag, bei über 9 Stunden Sitzzeit.", "thema": "Stationäre Pflege", "modul": "s05"}, {"front": "Welche Folgen hat 'Nicht-Inklusion' Älterer?", "back": "U.a. soziale Isolation, Verlust von Autonomie/Mobilität, Beeinträchtigung psychischer Gesundheit und Kognition, Stigmatisierung, Probleme bei der Alltagsbewältigung.", "thema": "Folgen von Nicht-Inklusion", "modul": "s05"}, {"front": "Wie ist das PROCARE-Training zeitlich strukturiert?", "back": "16 Wochen, 2x pro Woche, je 45 Minuten.", "thema": "PROCARE", "modul": "s05"}, {"front": "Welches Medikament nennt der Foliensatz zur Parkinson-Behandlung?", "back": "Levodopa (L-Dopa).", "thema": "Parkinson-Therapie", "modul": "s05"}, {"front": "Beispiel für anpassbare Inklusion im Sport?", "back": "Volleyball kann im Sitzen gespielt werden.", "thema": "Anpassung", "modul": "s05"}, {"front": "Womit ist ein geringerer Aktivitätsradius assoziiert (Polku et al. 2015)?", "back": "Mit einer höheren Prävalenz depressiver Symptome.", "thema": "Aktivitätsradius", "modul": "s05"}, {"front": "Wofür stehen die vier Buchstaben des TREE-Modells?", "back": "Teaching Style, Rules/Regulations, Environment und Equipment – vier Stellschrauben zur Anpassung des Sportunterrichts.", "thema": "TREE-Modell", "modul": "s06"}, {"front": "Was kennzeichnet das '6+1 Modell eines adaptiven Sportunterrichts' (Tiemann, 2015)?", "back": "Es modifiziert und erweitert das TREE-Modell und misst der Lehrkraft und ihrer Haltung hohe Bedeutung bei.", "thema": "6+1 Modell", "modul": "s06"}, {"front": "Was ist die Grundannahme der reflexiven Koedukation?", "back": "Formale Chancengleichheit ist nicht gleich echter Chancengerechtigkeit; Ziel ist ein bewusster, reflexiver Umgang mit der Differenzkategorie Geschlecht.", "thema": "reflexive Koedukation", "modul": "s06"}, {"front": "Was meint 'Dramatisierung vs. Entdramatisierung'?", "back": "Unterschiede werden nicht 'weggeredet', sondern teils bewusst zum Thema gemacht (Dramatisierung), teils wird das Gemeinsame sichtbar gemacht (Entdramatisierung).", "thema": "Dramatisierung", "modul": "s06"}, {"front": "Welche drei Vermittlungsprinzipien nennt der erziehende Schulsport?", "back": "Mehrperspektivität, Reflexion sowie Verständigung und Partizipation.", "thema": "erziehender Schulsport", "modul": "s06"}, {"front": "Nenne didaktische Leitideen zum Umgang mit Fremdheit (Gieß-Stüber, 2005).", "back": "Begegnung mit dem Fremden, Selbstrelativierung (eigener Ethnozentrismus), Differenzierung der Wahrnehmung und Ent-Differenzierung (transkulturelle Elemente).", "thema": "interkulturelles Lernen", "modul": "s06"}, {"front": "Was umfasst die Konstrukt-Ebene im Drei-Ebenen-Modell?", "back": "Didaktische Konstruktionsprinzipien: didaktische Modelle und Stellschrauben.", "thema": "Drei-Ebenen-Modell", "modul": "s06"}, {"front": "Was meint 'Ent-Differenzierung' im interkulturellen Lernen?", "back": "Erkennen transkultureller/universeller Elemente von Kultur, z.B. im Sport.", "thema": "Interkulturelles Lernen", "modul": "s06"}, {"front": "Was kennzeichnet koexistente Lernsituationen (Weichert)?", "back": "Partner haben eigene Bewegungsaufgaben; der soziale Austausch ist nachrangig.", "thema": "Bewegungsbeziehungen", "modul": "s06"}, {"front": "Welche Rolle hat Leon Winnebeck in der Blindenfußball-Nationalmannschaft?", "back": "Co-Trainer und Hintertorguide der Nationalmannschaft.", "thema": "Referenten", "modul": "s07"}, {"front": "Welche pädagogischen Leitbegriffe rahmen den Foliensatz zu Blindenfußball in der Schule?", "back": "Heterogenität, Vertrauen, Soziales Lernen, Kooperation, Leistung, Inklusion und Teilhabe.", "thema": "Leitbegriffe", "modul": "s07"}, {"front": "Welche Sportarten umfasst das Angebot 'Natursport in der pädiatrischen Onkologie'?", "back": "Schneesport, Wassersport sowie Klettern/Bouldern – als natursportliches Nachsorgeangebot.", "thema": "Natursport-Angebot", "modul": "s08"}, {"front": "Welche Zieldimensionen des Sporttreibens werden genannt?", "back": "Sportmotorische, affektive, kognitive und ästhetische Ziele sowie soziale und ethische Erziehungsstile.", "thema": "Zieldimensionen", "modul": "s08"}, {"front": "Ab welcher Dauer gilt ein Mensch nach SGB IX als behindert?", "back": "Wenn körperliche Funktion, geistige Fähigkeit oder seelische Gesundheit mit hoher Wahrscheinlichkeit länger als 6 Monate vom alterstypischen Zustand abweichen und die Teilhabe beeinträchtigt ist.", "thema": "Definition Behinderung", "modul": "s08"}, {"front": "Welche Effekte hat körperliche Aktivität bei onkologisch erkrankten Kindern?", "back": "Positive Effekte auf physische Leistungsfähigkeit (Ausdauer, Kraft, Motorik), Fatigue und Lebensqualität.", "thema": "Wirkung körperl. Aktivität", "modul": "s08"}, {"front": "Was besagt die Take-home-Message zum Umgang mit Heterogenität?", "back": "Heterogenität akzeptieren und produktiv nutzen; Potentiale über Limitierungen stellen; Sport ist ideales Feld, um Teilhabe zu leben und zu erlernen.", "thema": "Take home message", "modul": "s08"}, {"front": "Seit wann läuft das Projekt Natursport in der pädiatrischen Onkologie?", "back": "Neukonzeption seit Wintersemester 2021-22 (IfS Münster + UK Münster).", "thema": "Projektstart", "modul": "s08"}, {"front": "Was bedeutet 'Adaptive Skiing'?", "back": "Skifahren für Menschen mit Behinderungen, mit oder ohne spezialisiertes Equipment.", "thema": "Adaptive Skiing", "modul": "s08"}, {"front": "Woher stammt die Idee der Glücksliga, und wie heißt sie im Ursprungsland?", "back": "Aus Dänemark; dort heißt sie 'LykkeLiga' (Glücksliga).", "thema": "Glücksliga", "modul": "s09"}, {"front": "Seit wann gibt es die Glücksliga Deutschland und für wen?", "back": "Seit 2021 – sie soll Kindern und Jugendlichen mit Behinderung ermöglichen, ihrem Lieblingssport nachzugehen.", "thema": "Glücksliga", "modul": "s09"}, {"front": "Was bedeutet Unified Sport und von wem stammt das Konzept?", "back": "Gemeinsames Sporttreiben von Menschen mit und ohne geistige Behinderung; ein Konzept von Special Olympics.", "thema": "Unified", "modul": "s09"}, {"front": "Aus welchen zwei Rollen setzt sich das Unified-Beachvolleyballteam Münster zusammen?", "back": "Aus Athlet*innen und Unified-Partner*innen.", "thema": "Unified", "modul": "s09"}, {"front": "Welche Rahmenbedingungen sind vor Gründung eines Glücksteams zu klären?", "back": "Vereinskooperation, Trainingszeiten, Zielgruppe, Name und TrainerInnen.", "thema": "Glücksteam", "modul": "s09"}, {"front": "Was ist das sportliche Fernziel des Unified-Beachteams Münster?", "back": "Teilnahme an den World Games 2027 in Chile.", "thema": "Unified Ziele", "modul": "s09"}, {"front": "Welche drei Begriffe bilden die Trias, mit der gleichberechtigte Teilhabe ausdifferenziert wird?", "back": "Teilnahme, Teilgabe und Teilsein (im Modell zusätzlich: Nicht-Teilnahme).", "thema": "Trias der Teilhabe", "modul": "s10"}, {"front": "Auf welche Autoren geht das Modell 'Gleichberechtigte Teilhabe an Spielen im Sportunterricht' zurück?", "back": "Auf Jürgens (2020) in Anlehnung an Pfitzner (2017) und Heimlich (2014).", "thema": "Herkunft des Modells", "modul": "s10"}, {"front": "Über welche Dimensionen wird Teilhabe im Modell betrachtet?", "back": "Motorische Spielhandlungen, Kommunikation, Beitrag zum Gelingen, Variabilität und Emotionen.", "thema": "Dimensionen", "modul": "s10"}, {"front": "In welchen fünf Bereichen können nach Westermann (2016) Regelmodifikationen ansetzen?", "back": "Personal, Raum, Zeit, Handlungen und Inventar.", "thema": "Regelmodifikationen", "modul": "s10"}, {"front": "Was umfasst Teilhabe nach Boban & Hinz (2006)?", "back": "Akzeptanz, Wahrnehmung, Wertschätzung eines jeden sowie mit anderen gemeinsam zu lernen und zusammenzuarbeiten.", "thema": "Teilhabe (Boban & Hinz)", "modul": "s10"}, {"front": "Welches Recht haben nach Tiemann & Hofmann (2010) alle Schüler:innen im Sportunterricht?", "back": "Das Recht auf eine gleichberechtigte Teilhabe – aufbauend auf der Wertschätzung menschlicher Vielfalt.", "thema": "Recht auf Teilhabe", "modul": "s10"}, {"front": "Welche zwei Teilprozesse kennzeichnen die Professionelle Unterrichtswahrnehmung (PUW)?", "back": "Selektive Aufmerksamkeitssteuerung und wissensbasierte Deutungen.", "thema": "PUW", "modul": "s10"}, {"front": "Wodurch kann die PUW gefördert werden?", "back": "Durch Videotraining – u.a. wegen fehlendem Handlungsdruck und Theorie-Praxis-Bezug.", "thema": "PUW-Förderung", "modul": "s10"}, {"front": "Welche Fehlerarten der Unterrichtswahrnehmung nennt der Foliensatz?", "back": "Wahrnehmungs-, Erinnerungs-/Wiedergabe- und Interpretations-/Deutungsfehler.", "thema": "PUW-Fehler", "modul": "s10"}, {"front": "Auf welchen zwei Annahmen basiert die Existenz der Geschlechterklassen im Sport?", "back": "1. Es gibt nur zwei, biologisch eindeutig zu bestimmende Geschlechter. 2. Die Geschlechtszugehörigkeit determiniert die sportliche Leistung. Daher fungieren Geschlechterklassen als Leistungsklassen.", "thema": "Binarität", "modul": "s11"}, {"front": "Welche Testosteron-Durchschnittswerte nennt der Foliensatz für Männer und Frauen?", "back": "Männer im Schnitt 17 nmol/l, Frauen meist unter 2 nmol/l (Männer 10-20x höher).", "thema": "Testosteron", "modul": "s11"}, {"front": "Wie unterscheidet sich der männliche Leistungsvorteil je nach Sportart?", "back": "Bei schnellkräftig-explosiven Sportarten besonders hoch (20-50%); je wichtiger die Ausdauer, desto geringer (ca. 10%).", "thema": "Leistungsunterschiede", "modul": "s11"}, {"front": "Was ist der Kern des Falls Lia Thomas?", "back": "US-Schwimmerin, gewinnt 2022 nach 2021 abgeschlossener Transition als erste Transgender-Frau die NCAA-Meisterschaft über 500m; im selben Jahr schließt der Weltschwimmverband alle Transfrauen aus, die eine männliche Pubertät durchlaufen haben.", "thema": "Fallbeispiel", "modul": "s11"}, {"front": "Was beinhaltete das IOC-Framework von 2021?", "back": "Unterstützung von Inklusion, Nicht-Diskriminierung und Gesundheit aller Athlet:innen; Aufhebung der eigenen 5 nmol/l-Regel; Auftrag an die Verbände, eigene inklusive Regelungen auf Basis von Fairness, Nicht-Diskriminierung und Evidenz zu finden.", "thema": "IOC-Regularien", "modul": "s11"}, {"front": "Was bezeichnet DSD (Differences in Sex Development)?", "back": "Varianten der Geschlechtsentwicklung, bei denen die Entwicklung der Geschlechtsmerkmale (Chromosomen, Gonaden, Hormone, äußere Organe) nicht typisch männlich oder weiblich verläuft.", "thema": "DSD", "modul": "s11"}, {"front": "Um welchen Faktor ist der Testosteronwert bei Männern im Regelfall höher?", "back": "10-20x höher als bei Frauen.", "thema": "Testosteron", "modul": "s11"}, {"front": "Wie groß ist der Leistungsunterschied bei Ausdauerleistungen?", "back": "Geringer, ca. 10 %.", "thema": "Leistungsvorteil", "modul": "s11"}, {"front": "Welche Sportarten sind Ausnahmen von den Geschlechterklassen?", "back": "Segeln, Reiten, in Teilen Motorsport (sowie Mannschaftssport vorpubertärer Jahrgänge).", "thema": "Ausnahmen", "modul": "s11"}, {"front": "Was führte World Aquatics 2023 zusätzlich ein?", "back": "Eine offene Kategorie für Athlet:innen, die die Regeln nicht erfüllen können/wollen.", "thema": "World Aquatics", "modul": "s11"}];
+
+const QUIZ = [{"id": "q-s01-1", "thema": "Querschnittswissenschaft", "modul": "s01", "frage": "Was soll die Ringvorlesung am Beispiel Inklusion verdeutlichen?", "optionen": ["Dass die Sportwissenschaft eine Querschnittswissenschaft ist", "Dass die Sportmedizin die Leitdisziplin des Sports ist", "Dass Sportdidaktik von anderen Fächern unabhängig arbeitet", "Dass Inklusion vor allem ein trainingswissenschaftliches Thema ist"], "richtig": 0, "warum": "Nur die Querschnittswissenschaft wird als Ziel genannt; die übrigen Optionen widersprechen dem interdisziplinären Anspruch der Vorlesung.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – Ziele"}, {"id": "q-s01-2", "thema": "Modul 5", "modul": "s01", "frage": "Welche Prüfungsform ist als Modulabschlussprüfung (MAP) in Modul 5 vorgesehen?", "optionen": ["Eine mündliche Prüfung von 30 Minuten", "Eine schriftliche Hausarbeit von 15 Seiten", "Eine 60-minütige Klausur", "Ein benoteter Praxistest im Sportunterricht"], "richtig": 2, "warum": "Als MAP ist ausdrücklich eine 60-minütige Klausur genannt; die anderen Prüfungsformen kommen im Foliensatz nicht vor.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – Modulstruktur"}, {"id": "q-s01-3", "thema": "Studienleistung", "modul": "s01", "frage": "Woraus besteht der zweite Leistungspunkt der Studienleistung?", "optionen": ["Aus dem Verfassen eines 5-seitigen Reflexionsberichts", "Aus dem Bestehen eines Wissens-Checks mit ca. 30 MC-Fragen", "Aus einem mündlichen Referat in der Vorlesung", "Aus der regelmäßigen Teilnahme an der Vorlesung"], "richtig": 1, "warum": "Teilnahme ist der erste und der Reflexionsbericht der dritte Leistungspunkt; ein Referat ist gar nicht vorgesehen.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – Leistungspunkte"}, {"id": "q-s01-4", "thema": "Perspektiven auf Behinderung", "modul": "s01", "frage": "Welche Perspektive versteht Behinderung als Krankheit mit Ursachen und Symptomen, für die ein Förderplan erstellt werden muss?", "optionen": ["Die politologische Perspektive", "Die sozialwissenschaftliche Perspektive", "Die interaktionistische Perspektive", "Die medizinische (essentialistische) Perspektive"], "richtig": 3, "warum": "Die sozialwissenschaftliche/interaktionistische Sicht verortet Behinderung in Interaktion und Umfeld, nicht als Krankheit; die politologische Perspektive wird hier nicht auf Behinderung angewandt.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz"}, {"id": "q-s01-5", "thema": "Ziele", "modul": "s01", "frage": "Welches Ziel nennt die Vorlesung ausdrücklich für die Ringvorlesung?", "optionen": ["Eine eigene empirische Studie zur Inklusion durchzuführen", "Erste Bezüge zu heterogenen Zielgruppen im Sport herzustellen", "Die Grundlagen der Sportmedizin systematisch zu vermitteln", "Prüfungsaufgaben für das Praxissemester zu entwickeln"], "richtig": 1, "warum": "Nur das Herstellen erster Bezüge zu heterogenen Zielgruppen ist als Ziel genannt; die übrigen Optionen sind nicht Gegenstand der Ringvorlesungsziele.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz"}, {"id": "q-s01-6", "thema": "UN-BRK", "modul": "s01", "frage": "Wann trat die UN-Behindertenrechtskonvention in Deutschland in Kraft?", "optionen": ["am 10.10.2014", "am 03.05.2008", "am 26.03.2009", "am 17.07.2002"], "richtig": 2, "warum": "03.05.2008 ist das internationale Inkrafttreten, 17.07.2002 die Plagiats-Resolution des Hochschulverbandes, 2014 ein Publikationsjahr.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – UN-BRK"}, {"id": "q-s01-7", "thema": "Inklusionsquote", "modul": "s01", "frage": "Welche Quote setzt inklusiv beschulte SuS mit Förderbedarf ins Verhältnis zu ALLEN SuS?", "optionen": ["Inklusionsanteil", "Exklusionsquote", "Inklusionsquote", "Förderquote"], "richtig": 2, "warum": "Die Förderquote bezieht alle SuS mit Förderbedarf ein, der Inklusionsanteil nur die inklusiv beschulten, die Exklusionsquote die Förderschüler.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – Begriffe"}, {"id": "q-s01-8", "thema": "UN-BRK Artikel 30", "modul": "s01", "frage": "Welcher Artikel der UN-BRK betrifft Teilhabe an Erholung, Freizeit und Sport?", "optionen": ["Artikel 30", "Artikel 9", "Artikel 12", "Artikel 24"], "richtig": 0, "warum": "Artikel 24 betrifft die Bildung; Artikel 12 und 9 werden im Foliensatz nicht als einschlägig genannt.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz – Artikel 30"}, {"id": "q-s01-9", "thema": "Soziale Perspektive", "modul": "s01", "frage": "Wie versteht die sozialwissenschaftliche Perspektive Behinderung laut Sitzung 01?", "optionen": ["Als individuell zu behandelndes Defizit", "Als Ergebnis von Benachteiligung im Umfeld", "Als Krankheit mit Ursachen und Symptomen", "Als angeborenes, unveränderliches Merkmal"], "richtig": 1, "warum": "Die anderen entsprechen der medizinischen (essentialistischen) Sicht, von der sich die sozialwissenschaftliche Perspektive gerade abkehrt.", "beleg": "Sitzung 01 (Duensing-Knop), Foliensatz"}, {"id": "q-s02-1", "thema": "Definition", "modul": "s02", "frage": "Welche Aussage entspricht der Definition von Verhaltensauffälligkeiten (nach Fröhlich-Gildhoff, 2013)?", "optionen": ["Ein durch genetische Anlagen fest vorbestimmtes, unveränderliches Verhaltensmuster", "Ein nicht erwartetes oder nicht adäquat erscheinendes Verhalten, bewertet an kulturellen, gesellschaftlichen und sozialen Normen", "Ein Verhalten, das ausschließlich durch neurologische Befunde des ICD definiert wird", "Jede Abweichung vom statistischen Mittelwert einer großen Population"], "richtig": 1, "warum": "Die Definition stellt auf das nicht erwartete/adäquate Verhalten und soziale Normen ab, nicht auf Genetik, allein neurologische Befunde oder rein statistische Abweichung.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-2", "thema": "Funktionale Norm", "modul": "s02", "frage": "Ein Kind erfüllt beim Einschulungstest die vorgegebenen Anforderungen und gilt deshalb als 'schulreif'. Welcher Normbegriff liegt zugrunde?", "optionen": ["Funktionale Norm", "Ideale Norm", "Statistische Norm", "Subjektive Norm"], "richtig": 0, "warum": "Es geht um das Erfüllen vorgegebener Anforderungen (funktionale Norm); ideale Norm meint den Wunschzustand, statistische die Mehrheit und subjektive die eigene Auffassung.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-3", "thema": "ICD-10", "modul": "s02", "frage": "In welchem Kapitel des ICD-10 werden psychische und Verhaltensstörungen klassifiziert?", "optionen": ["Kapitel R (R00-R99)", "Kapitel Z (Z00-Z99)", "Kapitel F (F00-F99)", "Kapitel G (G00-G99)"], "richtig": 2, "warum": "Laut Foliensatz stehen sie im Kapitel F; G umfasst das Nervensystem, R Symptome und Z Faktoren der Inanspruchnahme des Gesundheitswesens.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-4", "thema": "Dimensionale Klassifikation", "modul": "s02", "frage": "Welche Zuordnung entspricht der dimensionalen Klassifikation (Petermann et al., 2002)?", "optionen": ["Sozialer Rückzug zählt zu den externalisierten Auffälligkeiten", "Aufmerksamkeitsprobleme zählen zu den gemischten Auffälligkeiten", "Aggressives Verhalten zählt zu den internalisierten Auffälligkeiten", "Depression zählt zu den gemischten Auffälligkeiten"], "richtig": 1, "warum": "Aufmerksamkeitsprobleme gelten als gemischt, während sozialer Rückzug und Depression internalisiert und aggressives Verhalten externalisiert sind.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-5", "thema": "Kategoriale Klassifikation", "modul": "s02", "frage": "Was leisten die kategorialen Systeme ICD und DSM laut Foliensatz?", "optionen": ["Sie liefern zu jedem Bild eine Ursache und eine Therapieempfehlung", "Sie bestimmen Prävalenzraten psychischer Störungen in Populationen", "Sie ordnen Verhalten ausschließlich dimensional entlang internalisiert/externalisiert", "Sie beschreiben Störungsbilder anhand der Symptome, ohne Ursachen und Therapien"], "richtig": 3, "warum": "ICD und DSM beschreiben symptomorientiert ohne Ursachen/Therapien; dimensionale Einordnung und Prävalenz sind andere Aspekte der Sitzung.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-6", "thema": "Bedeutung für den Sport", "modul": "s02", "frage": "Welche Schlussfolgerung zieht die Sitzung im Fazit für den Sport(unterricht)?", "optionen": ["Nur die statistische Prävalenz entscheidet, ob Sport stattfinden kann", "Für jedes Krankheitsbild muss der Sportunterricht grundlegend umgestaltet werden", "Krankheitsbilder kennen und einplanen, individuell aber meist nichts anders machen – außer bei Anorexie und Epilepsie", "Krankheitsbilder sind für den Sportunterricht ohne Bedeutung"], "richtig": 2, "warum": "Das Fazit betont Kennen und Berücksichtigen bei grundsätzlich keiner individuellen Änderung außer benannten Ausnahmen; die anderen über- oder unterschätzen die Bedeutung.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-7", "thema": "Prävalenz/Inzidenz", "modul": "s02", "frage": "Wie wird die Inzidenz einer psychischen Störung im Foliensatz definiert?", "optionen": ["Anzahl aller über die Lebensspanne diagnostizierten Fälle", "Anzahl neu auftretender Fälle pro 10.000 Personen pro Jahr", "Anzahl aller Erkrankten geteilt durch die Größe der Population", "Anteil der Mehrheit, der ein Merkmal der Norm aufweist"], "richtig": 1, "warum": "Inzidenz meint neu auftretende Fälle pro Zeiteinheit; Option 2 beschreibt dagegen die Prävalenz.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-8", "thema": "Soziale Norm", "modul": "s02", "frage": "Wer setzt laut Foliensatz die soziale Norm?", "optionen": ["Das rein individuelle, subjektive Empfinden der Person", "Ausschließlich wissenschaftliche Studien und Expertenratings", "Peers, Familie, Schule und Gesellschaft durch Regeln", "Die statistische Normalverteilung großer Populationen"], "richtig": 2, "warum": "Der Foliensatz nennt Peers, Familie, Schule und Gesellschaft; die übrigen Optionen beschreiben funktionale, statistische bzw. subjektive Norm.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-9", "thema": "Statistische Norm", "modul": "s02", "frage": "Wovon geht die Bestimmung der statistischen Norm in großen Populationen aus?", "optionen": ["Von den Erwartungen der Peers und der Familie", "Von der Erfüllung vorgegebener Anforderungen", "In der Regel von einer Normalverteilung", "Von einem gesellschaftlich definierten Schönheitsideal"], "richtig": 2, "warum": "Die statistische Norm nutzt Auftretenswahrscheinlichkeiten und geht i.d.R. von einer Normalverteilung aus; die anderen nennen ideale, soziale bzw. funktionale Norm.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-10", "thema": "Dimensionale Klassifikation", "modul": "s02", "frage": "Welche Auffälligkeit zählt in der dimensionalen Klassifikation zu den externalisierten?", "optionen": ["Sozialer Rückzug", "Körperliche Beschwerden", "Ängstlich-depressives Verhalten", "Aggressives Verhalten"], "richtig": 3, "warum": "Aggressives/dissoziales Verhalten und AD(H)S sind externalisiert; die drei übrigen zählen zu den internalisierten Auffälligkeiten.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-11", "thema": "Grundprinzipien", "modul": "s02", "frage": "Welches gehört zu den Grundprinzipien pädagogisch-therapeutischer Prozesse (Fröhlich-Gildhoff)?", "optionen": ["Ressourcenorientierung und Ganzheitlichkeit", "Ausschließliche Defizitorientierung des Kindes", "Streng monomethodisches Vorgehen", "Zufalls- statt hypothesengeleitetes Arbeiten"], "richtig": 0, "warum": "Genannt werden hypothesengeleitet, multimodal, multimethodal, Ganzheitlichkeit und Ressourcenorientierung; die Distraktoren sind deren Gegenteil.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s02-12", "thema": "Bewältigungsversuch", "modul": "s02", "frage": "Wie lassen sich Verhaltensauffälligkeiten funktional verstehen (Luder 2019)?", "optionen": ["Als bewusste Provokation gegenüber der Lehrkraft", "Als rein genetisch bedingtes Merkmal", "Als vorübergehende Unaufmerksamkeit ohne Bedeutung", "Als Bewältigungsversuch einer überfordernden Situation"], "richtig": 3, "warum": "Auffälligkeiten gelten als Bewältigungsversuch einer überfordernden Situation im Lebensumfeld; die anderen Optionen verkürzen oder verfälschen dies.", "beleg": "Sitzung 02 (Henning/Tietjens), Foliensatz"}, {"id": "q-s03-1", "thema": "Schulischer Lernort", "modul": "s03", "frage": "Aus welchen drei Professionen besteht das multiprofessionelle Team der Kompass-Schule?", "optionen": ["Regelschulpädagogik, Polizei und Schulpsychologie", "Sonderpädagogik, Jugendhilfe und Schulpsychologie", "Sonderpädagogik, Physiotherapie und Verwaltung", "Sportwissenschaft, Medizin und Sozialarbeit"], "richtig": 1, "warum": "Der Foliensatz nennt ausdrücklich nur Sonderpädagogik, Jugendhilfe und Schulpsychologie; die anderen Kombinationen kommen nicht vor.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-2", "thema": "Diagnostik", "modul": "s03", "frage": "Was besagt das Diagnosekriterium 'Ökologie'?", "optionen": ["Die Diagnose wird ausschließlich in der Schule durch Lehrkräfte gestellt", "Die Symptome müssen längere Zeit andauern und einen hohen Schweregrad haben", "Die Symptome treten in mindestens zwei Settings auf, von denen eines die Schule ist", "Für die gesellschaftliche Teilhabe sind spezifische Hilfen erforderlich"], "richtig": 2, "warum": "Option 1 beschreibt die Intensität und Option 2 die Integration, während Option 4 gar nicht als Kriterium vorkommt.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-3", "thema": "Intensivpädagogik", "modul": "s03", "frage": "Worin liegt die Besonderheit der Zielgruppe intensivpädagogischer Förderung (§15)?", "optionen": ["Sie kann ausschließlich außerhalb der Schule gefördert werden", "Sie wird durch gängiges Classroom-Management und Präventionsprogramme nicht mehr erreicht", "Sie benötigt lediglich ein konsequenteres Classroom-Management", "Sie hat keinen sonderpädagogischen Förderbedarf"], "richtig": 1, "warum": "Der Foliensatz betont, dass gerade diese Gruppe die üblichen Maßnahmen nicht mehr erreicht; die übrigen Optionen widersprechen dem Förderbedarf.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-4", "thema": "Ziel der Förderung", "modul": "s03", "frage": "Welches lang- bzw. kurzfristige Ziel wird für die intensivpädagogische Förderung genannt?", "optionen": ["Verzicht auf Zusammenarbeit mit außerschulischen Partner:innen", "Dauerhafte Beschulung am schulischen Lernort", "Rückführung in die allgemeine Schule", "Vollständige Auflösung der Lerngruppen"], "richtig": 2, "warum": "Der Foliensatz nennt ausdrücklich die Rückführung als Ziel; die anderen Optionen widersprechen der Förderlogik.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-5", "thema": "Diagnostik (MesK)", "modul": "s03", "frage": "Mittels welcher einheitlichen Diagnostik wird im Förderschwerpunkt (QUA-LiS) gearbeitet?", "optionen": ["Verfahren zur Erfassung der Klassenführung (VEK)", "Skala sozialer Schulleistungen (SSS)", "Matrix emotionaler und sozialer Kompetenzen (MesK)", "Index für kognitive Förderplanung (IKF)"], "richtig": 2, "warum": "Als einheitliche Diagnostik nennt der Foliensatz ausdrücklich die Matrix emotionaler und sozialer Kompetenzen (MesK).", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-6", "thema": "Grundhaltung", "modul": "s03", "frage": "Welche gemeinsame pädagogische Grundhaltung wird für die Kompass-Schule genannt?", "optionen": ["Neue Autorität und Reckahner Reflexionen", "Erlebnispädagogik und Peer-Tutoring", "Offener Unterricht und Montessori-Prinzip", "Direkte Instruktion und Token-System"], "richtig": 0, "warum": "Genannt werden 'neue Autorität' und die 'Reckahner Reflexionen'; die anderen Konzepte stehen nicht im Foliensatz.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s03-7", "thema": "Bewegungsräume", "modul": "s03", "frage": "Welche Bewegungsräume werden für die Kompass-Schule genannt?", "optionen": ["Kletterhalle, Schwimmbad und Sporthalle", "Bolzplatz, Turnraum und Gymnastikraum", "Time-Out-Raum, Yoga-Raum und Pausenhöfe", "Fitnessstudio, Tanzsaal und Aula"], "richtig": 2, "warum": "Unter 'Bewegungsräume' listet der Foliensatz Time-Out-Raum, Yoga-Raum und Pausenhöfe; die anderen sind nicht genannt.", "beleg": "Sitzung 03 (Görlich, Kompassschule), Foliensatz"}, {"id": "q-s04-1", "thema": "ICD-11-Definition", "modul": "s04", "frage": "Welches Mindestkriterium bezüglich der Dauer nennt die ICD-11 (6A05) für ADHS?", "optionen": ["Ein anhaltendes Muster von mindestens 12 Monaten", "Ein anhaltendes Muster von mindestens 6 Monaten", "Ein anhaltendes Muster von mindestens 2 Jahren", "Ein anhaltendes Muster von mindestens 3 Wochen"], "richtig": 1, "warum": "Der Foliensatz nennt ausdrücklich mindestens 6 Monate; die übrigen Zeitangaben stehen nicht in der Datei.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-2", "thema": "Zielgruppe", "modul": "s04", "frage": "Wie wurden die Kinder und Jugendlichen für das skate-aid-Programm ausgewählt?", "optionen": ["Sie meldeten sich eigenständig über eine Online-Plattform an", "Sie wurden per Zufallsauswahl aus Schulklassen gezogen", "Sie wurden von Sportvereinen an das Projekt vermittelt", "Sie wurden in der Praxis Dr. Dirksen & Franke behandelt und von den Ärzten vorgeschlagen"], "richtig": 3, "warum": "Die Auswahl erfolgte durch ärztlichen Vorschlag in der Praxis, nicht durch Selbstanmeldung, Zufall oder Vereine.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-3", "thema": "Methylphenidat", "modul": "s04", "frage": "Über welchen Wirkmechanismus wirkt Methylphenidat laut Foliensatz?", "optionen": ["Durch Ausschüttung von Serotonin im Hippocampus", "Durch Blockade der Acetylcholin-Rezeptoren im Kortex", "Durch Hemmung des Rücktransports von Dopamin und Noradrenalin", "Durch verstärkten Abbau von Dopamin im Striatum"], "richtig": 2, "warum": "Der Foliensatz beschreibt eine Reuptake-Inhibition, nicht Serotoninausschüttung, Rezeptorblockade oder verstärkten Abbau.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-4", "thema": "Neurobiologische Hypothese", "modul": "s04", "frage": "Was besagt die neurobiologische Hypothese zur Wirkung des Skatens?", "optionen": ["Eine verstärkte Reifung des präfrontalen Kortex", "Eine Erhöhung der Nervenleitgeschwindigkeit im Rückenmark", "Eine Reduktion der grauen Substanz im Striatum", "Eine dauerhafte Vergrößerung des Kleinhirnvolumens"], "richtig": 0, "warum": "Der Foliensatz formuliert die Reifung des präfrontalen Kortex; die anderen Strukturen werden nicht genannt.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-5", "thema": "Studiendesign", "modul": "s04", "frage": "Wie lang war die Skateboard-Intervention, deren Effekt Hypothese 2 prüft?", "optionen": ["24 Wochen", "16 Wochen", "8 Wochen", "4 Wochen"], "richtig": 1, "warum": "Der Foliensatz spricht ausdrücklich von einer 16-wöchigen Intervention; die übrigen Zeiträume werden nicht genannt.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-6", "thema": "Prävalenz", "modul": "s04", "frage": "Welche Prävalenz nennt der Foliensatz für ADHS bei Kindern im Grundschulalter?", "optionen": ["1 % – 2 %", "20 % – 25 %", "6,8 % – 15,1 %", "3 % – 5 %"], "richtig": 2, "warum": "Die Folie unterscheidet schulpflichtiges Alter (3-5 %) und Grundschulalter (6,8-15,1 %); gefragt ist Letzteres.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-7", "thema": "Geschlechterverhältnis", "modul": "s04", "frage": "Wie ist das Verhältnis Jungen zu Mädchen in klinischen ADHS-Studien?", "optionen": ["1 : 1", "5 : 1", "3 : 2", "2 : 1"], "richtig": 1, "warum": "Der Foliensatz gibt in klinischen Studien 5:1 an, während schulbasierte epidemiologische Studien 2:1 zeigen.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-8", "thema": "Methylphenidat", "modul": "s04", "frage": "In welcher Hirnstruktur wirkt Methylphenidat laut Foliensatz vor allem?", "optionen": ["In der Amygdala", "Im Kleinhirn", "Im Striatum", "Im Hippocampus"], "richtig": 2, "warum": "Die Folie zur Reuptake-Inhibition nennt die Wirkung vor allem im Striatum (Basalganglien).", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s04-9", "thema": "Präfrontaler Kortex", "modul": "s04", "frage": "Bis zu welchem Alter reift der präfrontale Kortex laut Foliensatz?", "optionen": ["Bis ca. zum 18. Lebensjahr", "Bis ca. zum 45. Lebensjahr", "Bis ca. zum 12. Lebensjahr", "Bis ca. zum 30. Lebensjahr"], "richtig": 3, "warum": "Der Foliensatz nennt eine Reifung bis ca. zum 30. Lebensjahr; die anderen Zeitpunkte stehen nicht im Text.", "beleg": "Sitzung 04 (Bohn / skate-aid), Foliensatz"}, {"id": "q-s05-1", "thema": "Inklusion im vs. durch Sport", "modul": "s05", "frage": "Was beschreibt 'Inklusion durch Sport' (im Gegensatz zu 'Inklusion im Sport')?", "optionen": ["Ältere nehmen an bestehenden kompetitiven Wettkampfligen teil", "Das Sportsystem wird ausschließlich für Menschen mit Behinderung reserviert", "Sport wird genutzt, um Alltag, Wohlbefinden und Selbstständigkeit Älterer zu verbessern", "Ältere werden in ein unverändertes Sportsystem eingegliedert"], "richtig": 2, "warum": "'Durch Sport' meint Sport als Mittel zur Verbesserung des Lebens Älterer; die anderen Optionen beschreiben Wettkampf, eine falsche Reservierung oder Integration.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-2", "thema": "Begriffsklärung", "modul": "s05", "frage": "Wie wird 'Inklusion' von 'Integration' abgegrenzt?", "optionen": ["Bei Inklusion wird das System so verändert, dass alle Teil des Ganzen werden", "Inklusion und Integration bezeichnen exakt denselben Vorgang", "Integration verändert das System, Inklusion gliedert Menschen ein", "Inklusion meint das Eingliedern in ein bestehendes, unverändertes System"], "richtig": 0, "warum": "Nur Option 2 gibt die Definition korrekt wieder; die übrigen vertauschen die Begriffe oder setzen sie gleich.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-3", "thema": "Alternde Gesellschaft", "modul": "s05", "frage": "Welche Aussage zur Bevölkerungsentwicklung nennt der Foliensatz?", "optionen": ["2060 wird jede dritte Person 65 Jahre und älter sein", "Die Zahl der über 65-Jährigen ist seit 1990 um 42% gesunken", "Der Anteil Älterer bleibt bis 2060 nahezu konstant", "2060 wird jede zehnte Person 65 Jahre und älter sein"], "richtig": 0, "warum": "Der Foliensatz nennt +42% seit 1990 und für 2060 jede dritte Person ab 65; die anderen Optionen widersprechen dem.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-4", "thema": "Kognitives Altern", "modul": "s05", "frage": "Wie verändern sich fluide und kristalline Intelligenz im Altersverlauf?", "optionen": ["Die kristalline nimmt ab, die fluide bleibt stabil", "Die fluide nimmt ab, die kristalline bleibt länger stabil", "Beide nehmen im Alter gleichermaßen stark ab", "Beide nehmen im Alter kontinuierlich zu"], "richtig": 1, "warum": "Geschwindigkeit/Flexibilität gehören zur fluiden (abnehmenden), Wissen zur kristallinen (stabileren) Intelligenz; die anderen Optionen kehren dies um.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-5", "thema": "Trainingseffekte", "modul": "s05", "frage": "Welche Trainingsform gilt zur Förderung der Kognition als am effektivsten?", "optionen": ["Kombiniertes körperlich-kognitives bzw. Ausdauer- plus Koordinationstraining", "Ausschließlich passive Mobilisation im Sitzen", "Reines Krafttraining ohne kognitive Anteile", "Reines Dehn- und Stretchingtraining"], "richtig": 0, "warum": "Der Foliensatz benennt die Kombination körperlich-kognitiv als am effektivsten; die anderen greifen nur einen unzureichenden Einzelaspekt heraus.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-6", "thema": "Stationäre Pflege", "modul": "s05", "frage": "Welche Angabe zur Aktivität von Pflegeheimbewohnern macht der Foliensatz?", "optionen": ["Sie verbringen im Mittel nur etwa 1 Stunde pro Tag sitzend", "Sie gehen im Mittel über 10.000 Schritte pro Tag", "Sie gehen im Mittel nur ca. 1007 Schritte pro Tag und sitzen über 9 Stunden", "Sie legen im Mittel täglich einen Aktivitätsradius bis zur Stadt zurück"], "richtig": 2, "warum": "Der Foliensatz nennt ca. 1007 Schritte und über 9 Stunden Sitzzeit; die anderen Optionen widersprechen diesen Werten.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-7", "thema": "Parkinson", "modul": "s05", "frage": "Was bezeichnet 'Freezing of Gait' laut Foliensatz?", "optionen": ["Einen Rückgang der grauen Hirnsubstanz", "Ein Kraftverlust der Beinmuskulatur im Alter", "Ein Symptom der Parkinson-Erkrankung", "Eine Muskelverspannung nach dem Sport"], "richtig": 2, "warum": "'Freezing of Gait' wird als eines der einschränkendsten Symptome der Parkinson-Erkrankung angeführt.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-8", "thema": "Demenzprävention", "modul": "s05", "frage": "Welchen Zusammenhang zeigt Iso-Markku et al. (2022) laut Foliensatz?", "optionen": ["Krafttraining erhöht das Demenzrisiko im Alter", "Aktivität in der Lebensmitte schützt vor Demenz", "Nur Koordinationstraining senkt das Demenzrisiko", "Aktivität wirkt erst ab dem 80. Lebensjahr schützend"], "richtig": 1, "warum": "Genannt wird körperliche Aktivität in der Lebensmitte als Schutzfaktor gegen dementielle Erkrankungen.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-9", "thema": "Gehirnalterung", "modul": "s05", "frage": "Welche strukturelle Veränderung der Gehirnalterung nennt der Foliensatz?", "optionen": ["Zunahme der flüssigkeitsgefüllten Hohlräume", "Zunahme der Nervenbahnen im Hippocampus", "Zunahme der weißen Substanz", "Zunahme der grauen Substanz"], "richtig": 0, "warum": "Genannt werden Abnahme weißer und grauer Substanz sowie Zunahme flüssigkeitsgefüllter Hohlräume.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-10", "thema": "Trainingsmechanismen", "modul": "s05", "frage": "Welcher Mechanismus wird dem Training zugeschrieben?", "optionen": ["Abnahme der Angiogenese", "Rückgang der Synaptogenese", "Abbau von Nervenwachstumsfaktoren", "Neurogenese im Hippocampus"], "richtig": 3, "warum": "Genannt wird u.a. Neurogenese im Hippocampus als trainingsbedingter Mechanismus; die anderen sind deren Gegenteil.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-11", "thema": "Inklusion im Sport", "modul": "s05", "frage": "Wo ist Inklusion laut Foliensatz besonders problematisch?", "optionen": ["In differenzierten Turngruppen", "Beim angepassten Sitzvolleyball", "Im Gesundheitssport für Ältere", "Im kompetitiven Breitensport"], "richtig": 3, "warum": "Problematisch ist der kompetitive Breitensport (Gewinnen/Verlieren, Auf-/Abstieg); die anderen sind gerade Beispiele gelingender Anpassung.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s05-12", "thema": "Aktivitätsradius", "modul": "s05", "frage": "Wie beschreibt Jansen et al. (2017) den Aktivitätsradius von Pflegeheimbewohnenden?", "optionen": ["Ausgedehnt bis auf die Stadt", "Überwiegend außerhalb der Einrichtung", "Gleichmäßig über alle Lebensräume verteilt", "Zu ca. 90 % auf Zimmer und Wohnfläche beschränkt"], "richtig": 3, "warum": "Der Radius ist zu ca. 90 % auf Zimmer/Wohnfläche beschränkt; die anderen Optionen widersprechen dem.", "beleg": "Sitzung 05 (Voelcker-Rehage), Foliensatz"}, {"id": "q-s06-1", "thema": "Heterogenität", "modul": "s06", "frage": "Wie wird Heterogenität nach Wenning (2007) definiert?", "optionen": ["Als objektiv messbare Eigenschaft einzelner Personen unabhängig vom Kontext", "Als dauerhafter Zustand der Verschiedenheit, der sich pädagogisch nicht auflösen lässt", "Als zugeschriebenes Konstrukt, das beim Vergleich von Personengruppen bezüglich einer Kategorie entsteht", "Als medizinische Kategorie zur Einteilung nach Förderbedarf"], "richtig": 2, "warum": "Heterogenität ist ein zugeschriebenes, kategorien- und standortabhängiges Konstrukt und gerade nicht objektiv-messbar, medizinisch oder unveränderlich.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-2", "thema": "Drei-Ebenen-Modell", "modul": "s06", "frage": "Welche drei Ebenen umfasst das Drei-Ebenen-Modell (Scheid & Friedrich)?", "optionen": ["Ziel-Ebene, Konstrukt-Ebene und Unterrichtsebene", "Planungs-Ebene, Durchführungs-Ebene und Reflexions-Ebene", "Individual-Ebene, Gruppen-Ebene und System-Ebene", "Motorik-Ebene, Kognitions-Ebene und Sozial-Ebene"], "richtig": 0, "warum": "Das Modell nennt ausdrücklich Ziel-, Konstrukt- und Unterrichtsebene; die anderen Gliederungen kommen nicht vor.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-3", "thema": "erziehender Schulsport", "modul": "s06", "frage": "Welche drei Vermittlungsprinzipien nennt der erziehende Schulsport auf der Methodenebene?", "optionen": ["Differenzierung, Individualisierung und Kompetenzorientierung", "Begegnung, Selbstrelativierung und Anerkennung", "Mehrperspektivität, Reflexion sowie Verständigung und Partizipation", "Teaching Style, Environment und Equipment"], "richtig": 2, "warum": "Nur Option 1 nennt die drei Prinzipien des erziehenden Schulsports; die übrigen gehören zu anderen Modellen (TREE, interkulturelles Lernen).", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-4", "thema": "6+1 Modell", "modul": "s06", "frage": "Was kennzeichnet das 6+1 Modell eines adaptiven Sportunterrichts (Tiemann, 2015)?", "optionen": ["Es erweitert das TREE-Modell und betont die Haltung der Lehrkraft", "Es ersetzt das TREE-Modell durch ein völlig neues, unabhängiges Konzept", "Es beschränkt sich auf die Anpassung von Regeln und Wettkampfformen", "Es reduziert die Bedeutung der Lehrkraft zugunsten reiner Materialanpassung"], "richtig": 0, "warum": "Das 6+1 Modell erweitert TREE und hebt die Bedeutung der Lehrkraft hervor, statt es zu ersetzen oder die Lehrkraft zurückzustellen.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-5", "thema": "reflexive Koedukation", "modul": "s06", "frage": "Welche Aussage gehört zur Grundannahme der reflexiven Koedukation?", "optionen": ["Mädchen und Jungen sollten grundsätzlich getrennt unterrichtet werden", "Kulturelle Fremdheit ist die zentrale Differenzkategorie des Ansatzes", "Geschlecht sollte im Unterricht möglichst unthematisiert bleiben", "Formale Chancengleichheit ist nicht gleichbedeutend mit echter Chancengerechtigkeit"], "richtig": 3, "warum": "Grundannahme ist, dass formale Chancengleichheit nicht echter Chancengerechtigkeit entspricht; reflexive Koedukation thematisiert Geschlecht bewusst und stellt nicht Fremdheit ins Zentrum.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-6", "thema": "TREE-Modell", "modul": "s06", "frage": "Wofür steht das 'E' für Environment im TREE-Modell?", "optionen": ["Für die Gestaltung/Anpassung der Umgebung und des Raums", "Für die emotionale Beziehung in der Gruppe", "Für die Auswahl der Lehrkraft", "Für die Anpassung der Bewertungskriterien"], "richtig": 0, "warum": "Environment meint die Umgebung/den Raum; Bewertung, Lehrkraft-Auswahl und Beziehung sind nicht mit diesem Buchstaben gemeint.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-7", "thema": "Index für Inklusion", "modul": "s06", "frage": "Was ist der 'Index für Inklusion' (Boban & Hinz, 2003) laut Foliensatz?", "optionen": ["Ein Diagnoseverfahren zur Feststellung sonderpädagogischen Förderbedarfs", "Ein verbindlicher Kernlehrplan für den Sportunterricht", "Ein Klassifikationsverfahren für Behinderungsformen im Sport", "Ein Instrument zur inklusiven Schul- und Unterrichtsentwicklung"], "richtig": 3, "warum": "Der Index wird als Instrument zur inklusiven Schul- und Unterrichtsentwicklung eingeführt; die anderen sind themennahe Fehlzuordnungen.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-8", "thema": "TREE-Modell", "modul": "s06", "frage": "Wofür steht das 'R' im TREE-Modell?", "optionen": ["Resources – Materialausstattung", "Rules/Regulations – Anpassung der Regeln", "Routines – wiederkehrende Bewegungsabläufe", "Roles – Rollenverteilung im Team"], "richtig": 1, "warum": "Im TREE-Modell steht R für Rules/Regulations; die übrigen R-Begriffe werden im Modell nicht so benannt.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-9", "thema": "Bewegungsbeziehungen", "modul": "s06", "frage": "Was ist das Ziel des Ansatzes 'Bewegungsbeziehungen' (Weichert)?", "optionen": ["Die Steigerung der individuellen motorischen Leistung im Wettkampf", "Der Aufbau dichter Bewegungsbeziehungen durch Passung von Person und Sache", "Die Vermittlung normierter Bewegungstechniken nach Altersstufen", "Die Einteilung von Lerngruppen nach ihrem Leistungsniveau"], "richtig": 1, "warum": "Weichert zielt auf dichte Bewegungsbeziehungen und die Passung Person-Sache, nicht auf Leistung, Normtechnik oder Selektion.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-10", "thema": "Bewegungsbeziehungen", "modul": "s06", "frage": "Welche Stufe liegt vor, wenn das gemeinsame Ziel nur durch Zusammenarbeit erreichbar ist?", "optionen": ["Solidarische Lernsituationen", "Koexistente Lernsituationen", "Subsidiäre Lernsituationen", "Komplementäre Lernsituationen"], "richtig": 0, "warum": "Solidarische Lernsituationen setzen ein nur gemeinsam erreichbares Ziel voraus; koexistente/komplementäre unterscheiden sich davon.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-11", "thema": "Interkulturelles Lernen", "modul": "s06", "frage": "Welche Leitidee meint das 'Erkennen des eigenen Ethnozentrismus' (Gieß-Stüber)?", "optionen": ["Ent-Differenzierung", "Erfahrung von Zugehörigkeit", "Begegnung mit dem Fremden", "Selbstrelativierung"], "richtig": 3, "warum": "Selbstrelativierung bezeichnet das Erkennen der eigenen Kultur als eine unter vielen; die anderen betreffen Dialog bzw. transkulturelle Elemente.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s06-12", "thema": "Reflexive Koedukation", "modul": "s06", "frage": "Was meint 'Dramatisierung versus Entdramatisierung' in der reflexiven Koedukation?", "optionen": ["Die Bewertung nach getrennten Leistungsmaßstäben", "Den vollständigen Verzicht auf jede Thematisierung", "Die strikte Geschlechtertrennung in allen Phasen", "Das bewusste Betonen oder Zurückstellen von Differenzen"], "richtig": 3, "warum": "Gemeint ist das 'Spiel mit Stereotypen': Unterschiede mal betonen, mal das Gemeinsame sichtbar machen – kein Trennen oder Wegreden.", "beleg": "Sitzung 06 (Leineweber), Foliensatz"}, {"id": "q-s07-1", "thema": "Referenten", "modul": "s07", "frage": "Welche Funktion übt Leon Winnebeck laut Foliensatz in der Blindenfußball-Nationalmannschaft aus?", "optionen": ["Physiotherapeut der Nationalmannschaft", "Co-Trainer und Hintertorguide der Nationalmannschaft", "Ehemaliger Blindenfußball-Nationalspieler", "Schiedsrichter der Nationalmannschaft"], "richtig": 1, "warum": "Der ehemalige Nationalspieler ist Jonas Fuhrmann; Schiedsrichter- oder Physiotherapeutenrollen werden nicht genannt.", "beleg": "Sitzung 07 (Winnebeck), Folie 2"}, {"id": "q-s07-2", "thema": "Leitbegriffe", "modul": "s07", "frage": "Welcher Begriff wird im Foliensatz NICHT als pädagogischer Leitbegriff aufgeführt?", "optionen": ["Soziales Lernen", "Wettkampforientierung", "Kooperation", "Vertrauen"], "richtig": 1, "warum": "Vertrauen, Soziales Lernen und Kooperation stehen explizit auf den Folien, 'Wettkampforientierung' hingegen nicht.", "beleg": "Sitzung 07 (Winnebeck), Folie 13"}, {"id": "q-s08-1", "thema": "Angebote in Kliniken", "modul": "s08", "frage": "Welche Angabe zur klinischen Versorgungslage nennt der Foliensatz?", "optionen": ["An allen Kliniken bestehen flächendeckende Nachsorgeangebote", "Angebote gibt es nur in der Reha, nie in der Akuttherapie", "Sportprogramme sind in Deutschland gesetzlich verpflichtend", "Nur an 25 Kliniken (42%) gibt es Sportprogramme während der Akuttherapie"], "richtig": 3, "warum": "Die anderen Optionen widersprechen den Folienzahlen (42% Akut, 28% Nachsorge) bzw. werden nicht behauptet.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-2", "thema": "Ziele", "modul": "s08", "frage": "Welches Ziel wird dem Projekt 'Natursport in der pädiatrischen Onkologie' zugeordnet?", "optionen": ["Rein medizinische Diagnostik ohne sportliche Inhalte", "Erhalt körperlicher Leistungsfähigkeit und Rückkehr in den (Sport-)Alltag", "Ausschließlich Leistungssport zur Wettkampfvorbereitung", "Ersatz der medizinischen Akuttherapie durch Sport"], "richtig": 1, "warum": "Nur der Erhalt der Leistungsfähigkeit und die Rückkehr in den Sportalltag stehen im Foliensatz; die übrigen widersprechen der Nachsorge-Ausrichtung.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-3", "thema": "Zieldimensionen", "modul": "s08", "frage": "Welche Zieldimension gehört laut Foliensatz zu den Zielen des Sporttreibens?", "optionen": ["Juristische Ziele", "Ökonomische Ziele", "Ästhetische Ziele", "Kommerzielle Ziele"], "richtig": 2, "warum": "Der Foliensatz listet ästhetische Ziele; ökonomische, juristische und kommerzielle Ziele erscheinen nicht als Dimensionen.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-4", "thema": "Bewegungsverhalten", "modul": "s08", "frage": "Was nennt der Foliensatz als Gründe für fehlendes Bewegungsverhalten onkologisch erkrankter Kinder?", "optionen": ["Ausschließlich fehlendes elterliches Interesse", "Nebenwirkungen, fehlende Anreize und Bewegungsräume, Unsicherheiten und Rückzugverhalten", "Vor allem die finanziellen Kosten der Sportvereine", "Ein grundsätzliches Sportverbot durch Ärzt*innen"], "richtig": 1, "warum": "Nur diese Aufzählung entspricht den Folienangaben; die übrigen Gründe werden nicht genannt.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-5", "thema": "Take home message", "modul": "s08", "frage": "Welche Aussage entspricht der Take-home-Message?", "optionen": ["Limitierungen sind bedeutsamer als Potentiale", "Heterogenität soll vermieden und ausgeglichen werden", "Sport eignet sich kaum zur Vermittlung von Teilhabe", "Potentiale sind bedeutsamer als Limitierungen, Heterogenität produktiv nutzen"], "richtig": 3, "warum": "Nur diese Aussage gibt die Take-home-Message korrekt wieder; die anderen kehren die Kernbotschaft um.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-6", "thema": "Behinderung (SGB IX)", "modul": "s08", "frage": "Ab welcher voraussichtlichen Dauer der Abweichung gilt man laut SGB IX als behindert?", "optionen": ["Länger als 6 Monate", "Länger als 12 Monate", "Länger als 24 Monate", "Länger als 3 Monate"], "richtig": 0, "warum": "SGB IX: Abweichung mit hoher Wahrscheinlichkeit länger als 6 Monate vom alterstypischen Zustand.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-7", "thema": "Kinderkrebsregister", "modul": "s08", "frage": "Welchen Stellenwert hat Krebs laut Foliensatz als Todesursache im Kinderalter?", "optionen": ["Dritthäufigste Todesursache", "Seltene Todesursache", "Häufigste Todesursache", "Zweithäufigste Todesursache"], "richtig": 3, "warum": "Der Foliensatz (Kinderkrebsregister) nennt Krebs als zweithäufigste Todesursache im Kinderalter.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-8", "thema": "Effekte Aktivität", "modul": "s08", "frage": "Welche positiven Effekte körperlicher Aktivität nennt der Foliensatz?", "optionen": ["Geringeres Rückfallrisiko und weniger Nebenwirkungen", "Höhere Medikamentendosis und kürzere Aufenthalte", "Physische Leistungsfähigkeit, Fatigue und Lebensqualität", "Bessere Schulnoten und schnellere Heilung des Tumors"], "richtig": 2, "warum": "Genannt werden Effekte auf physische Leistungsfähigkeit, Fatigue und Lebensqualität; die anderen Wirkungen stehen nicht im Text.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-9", "thema": "UN-KRK Art. 31", "modul": "s08", "frage": "Welches Recht erkennt Artikel 31 der UN-Kinderrechtskonvention laut Foliensatz an?", "optionen": ["Recht auf Schutz vor körperlicher Überlastung", "Recht auf Ruhe, Freizeit und Spiel", "Recht auf inklusive Beschulung", "Recht auf kostenlose medizinische Versorgung"], "richtig": 1, "warum": "Artikel 31 nennt das Recht auf Ruhe, Freizeit und Spiel; die anderen Rechte betrifft er nicht.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s08-10", "thema": "Sicherheit", "modul": "s08", "frage": "Wie viele Verletzungen durch die Sportangebote nennt der Foliensatz (2022-2024)?", "optionen": ["0 Verletzungen", "unbekannt", "3 Verletzungen", "12 Verletzungen"], "richtig": 0, "warum": "Der Foliensatz gibt für die Sportangebote 0 Verletzungen an; die anderen Zahlen stehen nicht im Text.", "beleg": "Sitzung 08 (Boll), Foliensatz"}, {"id": "q-s09-1", "thema": "Glücksliga", "modul": "s09", "frage": "Aus welchem Land stammt die ursprüngliche Idee der Glücksliga?", "optionen": ["Dänemark", "Schweden", "Niederlande", "Norwegen"], "richtig": 0, "warum": "Die Folien nennen ausdrücklich Dänemark als Ursprung der 'LykkeLiga'; die anderen Länder werden nicht erwähnt.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s09-2", "thema": "Glücksliga", "modul": "s09", "frage": "Seit welchem Jahr gibt es die Glücksliga Deutschland?", "optionen": ["Seit 2023", "Seit 2021", "Seit 2017", "Seit 2019"], "richtig": 1, "warum": "Laut Folie besteht die Glücksliga Deutschland seit 2021; 2017 bezieht sich auf das erste dänische Team.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s09-3", "thema": "Unified", "modul": "s09", "frage": "Was kennzeichnet das Unified-Prinzip von Special Olympics?", "optionen": ["Nur Menschen mit geistiger Behinderung bilden ein Team", "Menschen mit Behinderung treten getrennt gegen Teams ohne Behinderung an", "Menschen mit und ohne geistige Behinderung spielen gemeinsam im selben Team", "Menschen ohne Behinderung übernehmen ausschließlich Betreuungsaufgaben"], "richtig": 2, "warum": "Unified bedeutet gemeinsames Spielen im selben Team; die anderen Optionen widersprechen dem inklusiven Grundprinzip.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s09-4", "thema": "Unified", "modul": "s09", "frage": "Wie werden die Mitglieder des Unified-Beachvolleyballteams Münster bezeichnet?", "optionen": ["Spieler*innen und Betreuer*innen", "Athlet*innen und Unified-Partner*innen", "Athlet*innen und Trainer*innen", "Aktive und Fördermitglieder"], "richtig": 1, "warum": "Die Folie unterscheidet ausdrücklich Athlet*innen und Unified-Partner*innen; die übrigen Bezeichnungen tauchen nicht auf.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s09-5", "thema": "Glücksliga", "modul": "s09", "frage": "Wie heißt die dänische Ursprungsidee, auf der die Glücksliga basiert?", "optionen": ["HjerteLiga", "GladLiga", "LykkeLiga", "SolLiga"], "richtig": 2, "warum": "Die Glücksliga geht auf die dänische LykkeLiga zurück (erstes Team August 2017); die anderen Namen sind erfunden.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s09-6", "thema": "Unified Münster", "modul": "s09", "frage": "Wann wurde das Unified-Beachvolleyballteam Münster gegründet?", "optionen": ["Januar 2025", "Januar 2024", "Januar 2022", "Januar 2023"], "richtig": 1, "warum": "Die Gründung erfolgte im Januar 2024, nach den World Games 2023; die anderen Jahre widersprechen der Folie.", "beleg": "Sitzung 09 (Schneider/Hermann), Foliensatz"}, {"id": "q-s10-1", "thema": "Trias der Teilhabe", "modul": "s10", "frage": "Welche drei Formen bilden die Trias der Teilhabe im Foliensatz?", "optionen": ["Personal, Raum und Inventar", "Akzeptanz, Wahrnehmung und Wertschätzung", "Teilnahme, Teilgabe und Teilsein", "Integration, Inklusion und Teilhabe"], "richtig": 2, "warum": "Integration/Inklusion, Akzeptanz/Wahrnehmung (Boban & Hinz) und Personal/Raum (Regelmodifikationen) stammen aus anderen Folienstellen und bilden nicht die Trias.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-2", "thema": "Formen der Teilhabe", "modul": "s10", "frage": "Welche zwei weiteren Formen ergänzt das Modell neben 'Teilnahme' und 'Nicht-Teilnahme'?", "optionen": ["Integration und Inklusion", "Variabilität und Emotionen", "Akzeptanz und Wertschätzung", "Teilgabe und Teilsein"], "richtig": 3, "warum": "Variabilität/Emotionen sind Dimensionen des Modells; Integration/Inklusion und Akzeptanz/Wertschätzung stammen aus anderen Folien und sind keine Teilhabeformen.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-3", "thema": "Herkunft des Modells", "modul": "s10", "frage": "Auf welche Autoren geht das Modell 'Gleichberechtigte Teilhabe an Spielen' zurück?", "optionen": ["Westermann (2016) und Merz-Atalik (2016)", "Boban & Hinz (2006) und Schmelzer (2012)", "Tiemann (2019) und Wolters (2015)", "Jürgens (2020) in Anlehnung an Pfitzner (2017) und Heimlich (2014)"], "richtig": 3, "warum": "Boban & Hinz, Schmelzer, Tiemann, Wolters, Westermann und Merz-Atalik werden für andere Inhalte zitiert, nicht als Quelle dieses Modells.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-4", "thema": "Regelmodifikationen", "modul": "s10", "frage": "In welchem Bereich können nach Westermann (2016) Regelmodifikationen ansetzen?", "optionen": ["Inventar", "Emotionen", "Kommunikation", "Teilgabe"], "richtig": 0, "warum": "Emotionen und Kommunikation sind Dimensionen der Teilhabe und Teilgabe eine Teilhabeform – nur Inventar zählt zu den Regelmodifikationsbereichen.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-5", "thema": "Recht auf Teilhabe", "modul": "s10", "frage": "Welche Aussage zum Recht auf Teilhabe entspricht dem Foliensatz (Tiemann & Hofmann, 2010)?", "optionen": ["Nur Schüler mit sonderpädagogischem Unterstützungsbedarf haben Anspruch auf Teilhabe", "Aufbauend auf der Wertschätzung menschlicher Vielfalt haben alle Schüler das Recht auf gleichberechtigte Teilhabe", "Teilhabe meint ausschließlich die motorische Teilnahme am Spiel", "Teilhabe ist im Sportunterricht rechtlich nicht verankert"], "richtig": 1, "warum": "Die anderen Aussagen widersprechen dem Folientext, der das Teilhaberecht allen Schülern und über die reine motorische Teilnahme hinaus zuspricht.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-6", "thema": "Teilhabe (Boban & Hinz)", "modul": "s10", "frage": "Was gehört nach Boban & Hinz (2006) zum Begriff der Teilhabe?", "optionen": ["Reaktivitätseffekt und Übermittlungsprobleme", "Selektive Aufmerksamkeitssteuerung", "Teilgabe und Teilsein", "Akzeptanz und Wertschätzung eines jeden"], "richtig": 3, "warum": "Selektive Aufmerksamkeit sowie Reaktivitätseffekt/Übermittlungsprobleme stammen aus dem Teil zur Unterrichtswahrnehmung, und Teilgabe/Teilsein sind Formen des Modells, nicht Boban & Hinz' Teilhabebegriff.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-7", "thema": "Trias (Heimlich)", "modul": "s10", "frage": "Welche drei Begriffe stellt Heimlich (2014) im Titel gegenüber?", "optionen": ["Integration, Inklusion und Teilhabe", "Teilnahme, Teilgabe und Nicht-Teilnahme", "Teilhabe, Teilnahme und Variabilität", "Teilhabe, Teilgabe und Teilsein"], "richtig": 3, "warum": "Heimlichs Titel (2014) lautet 'Teilhabe, Teilgabe oder Teilsein?'; die anderen mischen Begriffe aus anderen Folien.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-8", "thema": "Begriffsabgrenzung", "modul": "s10", "frage": "Welchen dritten Begriff nennt die Folie neben Integration und Inklusion (Schmelzer 2012)?", "optionen": ["Teilgabe", "Teilnahme", "Teilhabe", "Teilsein"], "richtig": 2, "warum": "Schmelzer (2012) stellt Integration, Inklusion und Teilhabe nebeneinander; die anderen sind Formen des Teilhabemodells.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-9", "thema": "Modell Teilhabe", "modul": "s10", "frage": "Welcher Kategorie stellt das Modell die 'Teilnahme' gegenüber?", "optionen": ["Teilsein", "Nicht-Teilnahme", "Variabilität", "Teilgabe"], "richtig": 1, "warum": "Das Modell listet 'Teilnahme' und 'Nicht-Teilnahme' als Gegenpaar; Teilgabe/Teilsein sind weitere Formen, Variabilität eine Dimension.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-10", "thema": "Inklusive Didaktik", "modul": "s10", "frage": "Welches gehört zu den vier Prinzipien inklusiver Didaktik (Tiemann, 2019)?", "optionen": ["Standardisierung der Lernwege", "Fokussierung auf Leistungsnormen", "Homogenisierung der Lerngruppe", "Wertschätzung von Unterschiedlichkeit"], "richtig": 3, "warum": "Genannt werden Wertschätzung von Unterschiedlichkeit, Fokussierung der Potentiale, Diversitätssensibilität und Reflexion; die anderen sind deren Gegenteil.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s10-11", "thema": "Modell-Dimensionen", "modul": "s10", "frage": "Welcher Aspekt wird im Modell 'Gleichberechtigte Teilhabe an Spielen' genannt?", "optionen": ["Schriftliche Reflexion", "Motorische Spielhandlungen", "Soziale Herkunft", "Notengebung im Sport"], "richtig": 1, "warum": "Das Modell nennt u.a. motorische Spielhandlungen, Kommunikation, Beitrag zum Gelingen, Variabilität und Emotionen.", "beleg": "Sitzung 10 (Jürgens), Foliensatz"}, {"id": "q-s11-1", "thema": "Testosteron", "modul": "s11", "frage": "Welche durchschnittliche Testosteronkonzentration nennt der Foliensatz für Männer?", "optionen": ["17 nmol/l", "5 nmol/l", "2,5 nmol/l", "2 nmol/l"], "richtig": 0, "warum": "2 nmol/l ist der Frauenwert; 5 und 2,5 nmol/l sind Regel-Grenzwerte von Verbänden, nicht der männliche Durchschnitt.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-2", "thema": "Leistungsunterschiede", "modul": "s11", "frage": "Wie wird der männliche Leistungsvorteil bei schnellkräftig-explosiven Sportarten beziffert?", "optionen": ["20-50%", "über 90%", "genau 17%", "ca. 10%"], "richtig": 0, "warum": "Ca. 10% gilt für Ausdauerleistungen, 17% ist ein Testosteronwert und über 90% wird nicht genannt.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-3", "thema": "IOC-Regularien", "modul": "s11", "frage": "Was tat das IOC 2021 mit seiner bisherigen 5 nmol/l-Testosteron-Regel?", "optionen": ["Es hob die eigene Regelung auf und delegierte an die Verbände", "Es führte zusätzlich genetische Geschlechtstests ein", "Es übertrug sie unverändert an alle Verbände", "Es verschärfte sie auf 2,5 nmol/l"], "richtig": 0, "warum": "Die Verschärfung auf 2,5 nmol/l und genetische Tests stammen von einzelnen Verbänden, nicht vom IOC-Framework, das die Regel gerade aufhob.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-4", "thema": "Fallbeispiel", "modul": "s11", "frage": "Welche Aussage zum Fall Caster Semenya entspricht dem Foliensatz?", "optionen": ["Sie wurde nach ihrem WM-Gold sofort lebenslang gesperrt", "2018 führte der Weltverband eine disziplinspezifische Hyperandrogenismus-Regel für 400m bis 1.500m ein", "Der CAS hob 2019 sämtliche Hyperandrogenismus-Regeln endgültig auf", "Sie ist eine US-amerikanische Schwimmerin"], "richtig": 1, "warum": "Eine sofortige lebenslange Sperre wird nicht genannt, der CAS bestätigte 2019 die Regel statt sie aufzuheben, und Semenya ist südafrikanische Mittelstreckenläuferin.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-5", "thema": "Wellenbewegung", "modul": "s11", "frage": "Wie wird die historische Entwicklung der Regularien im Leistungssport charakterisiert?", "optionen": ["Als durchgehend restriktive Linie seit 1950", "Als stetig zunehmende Öffnung ohne Rückschritte", "Als Wellenbewegung von restriktiv über Öffnung zur erneuten Restriktion", "Als vollständige Abschaffung aller Geschlechterkategorien"], "richtig": 2, "warum": "Der Foliensatz beschreibt eine Wellenbewegung mit Phasenwechseln, keine stetige Öffnung, keine durchgehende Restriktion und keine Abschaffung.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-6", "thema": "Verbandsreaktionen", "modul": "s11", "frage": "Welche Regelung nennt der Foliensatz für den DFB im Umgang mit Transfrauen?", "optionen": ["Einführung genetischer Geschlechtstests als Zulassungskriterium", "Verpflichtende Hormontherapie bis zum 12. Lebensjahr", "Genereller Ausschluss aller Transfrauen vom Spielbetrieb", "Transfrauen/Menschen mit Eintrag 'divers' können zumindest im Amateurbereich selbst entscheiden"], "richtig": 3, "warum": "Genereller Ausschluss, Hormontherapie und genetische Tests stammen von anderen Verbänden, nicht vom DFB.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-7", "thema": "Sex/Gender", "modul": "s11", "frage": "Wie definiert der Foliensatz nach Butler (1991) den Begriff GENDER?", "optionen": ["Als hormonelle Konzentration, die über die Wettkampfklasse entscheidet", "Als chromosomale Ausstattung, die die Leistung determiniert", "Als biologisches Geschlecht, bei Geburt über Geschlechtsmerkmale zugewiesen", "Als soziales Geschlecht, durch wiederholte Handlungen und Praktiken hergestellt"], "richtig": 3, "warum": "GENDER ist das soziale Geschlecht (nach Butler); die anderen Optionen beschreiben sex bzw. rein biologische Merkmale.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-8", "thema": "Intersexualität", "modul": "s11", "frage": "Welche Häufigkeit nennt der Foliensatz für Intersexualität?", "optionen": ["Ca. 1 von 25.000 Geburten", "Ca. 1 von 250 Geburten", "Ca. 1 von 500 Geburten", "Ca. 1 von 2.500 Geburten"], "richtig": 3, "warum": "Der Foliensatz gibt Intersexualität mit ca. 1 von 2.500 Geburten (ca. 0,05 %) an.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-9", "thema": "Fall Lia Thomas", "modul": "s11", "frage": "Wie beschreibt der Foliensatz den Fall Lia Thomas?", "optionen": ["Sie gewann 2022 als erste Transgender-Frau die NCAA-Meisterschaft über 500m", "Sie wurde disqualifiziert, weil Erkenntnisse über Intersexualität vorlagen", "Sie gewann 2024 Gold im Boxen bei den Spielen in Paris", "Sie klagte erfolgreich gegen die Hyperandrogenismus-Regel"], "richtig": 0, "warum": "Laut Foliensatz gewann Lia Thomas 2022 als erste Transgender-Frau die NCAA-Meisterschaft über 500m; die anderen Fälle betreffen andere Personen.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-10", "thema": "World Athletics", "modul": "s11", "frage": "Was verschärfte World Athletics laut Foliensatz im Jahr 2025?", "optionen": ["Zusammenlegung der Transgender- und DSD-Regularien plus Gentests", "Eine offene Kategorie für nicht regelkonforme Athleten", "Eine 5 nmol/l-Testosteron-Grenze für alle Athletinnen", "Zulassung von DSD-Athletinnen ohne Androgensensitivität"], "richtig": 0, "warum": "Für World Athletics 2025 nennt der Foliensatz die Zusammenlegung der Transgender- und DSD-Regeln und genetische Geschlechtstests.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-11", "thema": "ICD-11", "modul": "s11", "frage": "Wie wird nach ICD-11 laut Foliensatz Transsexualität heute gefasst?", "optionen": ["Als Variante der Geschlechtsentwicklung (DSD)", "Als Gender-Inkongruenz", "Als Hyperandrogenismus", "Als psychische Störung der Geschlechtsidentität"], "richtig": 1, "warum": "Der Foliensatz nennt als heutige Fassung (ICD-11) 'Gender-Inkongruenz'; DSD und Hyperandrogenismus sind andere Konzepte.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}, {"id": "q-s11-12", "thema": "Fall Imane Khelif", "modul": "s11", "frage": "Was gilt laut Foliensatz aktuell für die Startberechtigung von Imane Khelif?", "optionen": ["Dauerhaft von der Frauenkategorie ausgeschlossen", "Nur mit Testosteronwert unter 2,5 nmol/l über 24 Monate", "Nur in einer offenen Kategorie startberechtigt", "Startberechtigt, solange keine gesicherten Erkenntnisse zum Geschlecht vorliegen"], "richtig": 3, "warum": "Der Foliensatz hält fest, dass Khelif aktuell startberechtigt ist, solange keine gesicherten Erkenntnisse vorliegen.", "beleg": "Sitzung 11 (Konjer), Foliensatz"}];
+
+/* ==========================================================================
+   RENDERING — muss nicht angefasst werden.
+   ========================================================================== */
+const app = document.getElementById("app");
+const chips = document.getElementById("chips");
+let aktiv = MODULE[0].id;
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderChips(){
+  chips.innerHTML = MODULE.map(m =>
+    `<button class="chip" data-id="${m.id}" aria-current="${m.id===aktiv}">${esc(m.nr)}</button>`).join("");
+  const cur = chips.querySelector('[aria-current="true"]');
+  if (cur) cur.scrollIntoView({inline:"center", block:"nearest", behavior:"smooth"});
+}
+
+function renderHero(){
+  return `<section class="hero wrap">
+    <p class="kicker">${esc(META.kicker)}</p>
+    <h1>${esc(META.titel)}</h1>
+    <p>${esc(META.claim)}</p>
+    <div class="stats">${META.stats.map(s =>
+      `<div class="stat"><b>${esc(s.wert)}</b><span>${esc(s.label)}</span></div>`).join("")}</div>
+  </section>`;
+}
+
+function renderModul(m){
+  const i = MODULE.findIndex(x => x.id === m.id);
+  const prev = MODULE[i-1], next = MODULE[i+1];
+  const inhalt = m.id === "quiz" ? (deckHTML()+trainerHTML()) : m.html;
+  return `<section class="modul wrap">
+    <p class="kicker">${esc(m.kicker)}</p>
+    <h2>${esc(m.titel)}</h2>
+    ${inhalt}
+    ${m.beleg ? `<p class="beleg"><strong>Beleg:</strong> ${esc(m.beleg)}</p>` : ""}
+    <div class="pager">
+      ${prev ? `<button data-go="${prev.id}">← ${esc(prev.titel)}</button>` : "<span></span>"}
+      ${next ? `<button data-go="${next.id}">${esc(next.titel)} →</button>` : "<span></span>"}
+    </div>
+  </section>`;
+}
+
+function render(){
+  const m = MODULE.find(x => x.id === aktiv);
+  app.innerHTML = (m.id === MODULE[0].id ? renderHero() : "") + renderModul(m);
+  renderChips();
+  if (m.id === "quiz") wireTrainer();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.addEventListener("click", e => {
+  const nav = e.target.closest(".chip[data-id], [data-go]");
+  if (nav){ aktiv = nav.dataset.id || nav.dataset.go; render(); return; }
+  const f = e.target.closest(".flip");
+  if (f) f.classList.toggle("flipped");
+  if (document.documentElement.classList.contains("quizmode")){
+    const mk = e.target.closest(".maskable");
+    if (mk) mk.classList.toggle("revealed");
+  }
+});
+
+/* Abfragemodus */
+const qm = document.getElementById("quizmode");
+qm.addEventListener("click", () => {
+  const on = qm.getAttribute("aria-pressed") !== "true";
+  qm.setAttribute("aria-pressed", on);
+  document.documentElement.classList.toggle("quizmode", on);
+  try { localStorage.setItem("quizmode", on ? "1" : "0"); } catch(_){}
+});
+try {
+  if (localStorage.getItem("quizmode") === "1"){
+    qm.setAttribute("aria-pressed", "true");
+    document.documentElement.classList.add("quizmode");
+  }
+} catch(_){}
+
+/* ==========================================================================
+   FLIP-DECK + TRAINER-WIRING (Ersatz fuer Basis-Quiz)
+   ========================================================================== */
+function deckHTML(){
+  return `<div class="pretest"><h3>Karteikarten</h3>
+    <p style="color:var(--muted);font-size:.86rem">Klick eine Karte zum Aufdecken. Sie passt sich der Textlänge an. Danach unten der Selbsttest. <span style="color:var(--signal)">Taste <kbd>a</kbd></span> schaltet das Mitfliegen des Kollegen an/aus.</p>
+    <div class="deck">${CARDS.map(c =>
+      `<div class="qcard"><div class="qc-front">${esc(c.front)}</div>`+
+      `<a class="qc-back" data-go="${c.modul}" title="Zur Fundstelle springen">${esc(c.back)}`+
+      `<span class="qc-src">↗ Fundstelle: Sitzung ${c.modul.slice(1)}</span></a></div>`
+      ).join("")}</div><h3 style="margin-top:2em">Selbsttest</h3></div>`;
+}
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-go]")) return;          // Fundstellen-Link navigiert, nicht togglen
+  const c = e.target.closest(".qcard");
+  if (c){ c.classList.toggle("open"); besideCard(c); } // Hippo stellt sich neben die Karte
+});
+function wireTrainer(){
+  app.querySelectorAll("[data-start]").forEach(b =>
+    b.addEventListener("click", () => startSession(b.dataset.start)));
+}
+
+render();
+
+
+/* ==========================================================================
+   1 · LEITNER-BOXEN
+   ========================================================================== */
+const INTERVALL = {1:1, 2:2, 3:4, 4:8, 5:16};        // Tage
+const SRS = load("srs", {});                          // { itemId: {box,last,streak,fails} }
+const JOURNAL = load("journal", []);                  // [{itemId,thema,ts,gewaehlt,richtig,konf}]
+
+function load(k, fb){ try{ return JSON.parse(localStorage.getItem(k)) ?? fb; }catch(_){ return fb; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} }
+
+function faellig(id){
+  const s = SRS[id];
+  if (!s) return true;                                // nie gesehen = fällig
+  return (Date.now() - s.last) / 864e5 >= INTERVALL[s.box];
+}
+function faelligePool(){ return QUIZ.filter(q => faellig(q.id)); }
+
+function bewerte(id, korrekt){
+  const s = SRS[id] || {box:1, last:0, streak:0, fails:0};
+  if (korrekt){ s.box = Math.min(5, s.box + 1); s.streak++; }
+  else        { s.box = 1; s.streak = 0; s.fails++; }   // falsch = zurück auf 1, kompromisslos
+  s.last = Date.now();
+  SRS[id] = s;
+  save("srs", SRS);
+}
+
+/* ==========================================================================
+   2 · KONFIDENZ + URTEIL (Hypercorrection, Metcalfe 2017)
+   ========================================================================== */
+const URTEIL = {
+  "sicher|richtig":   ["good",   "Sitzt. Box hoch."],
+  "sicher|falsch":    ["danger", "Du warst dir sicher — und lagst falsch. Das ist die gefährlichste Sorte Lücke: Du wusstest nicht, dass du es nicht weißt. Gute Nachricht: genau diese Fehler bleiben nach der Korrektur am besten hängen (Metcalfe 2017). Zurück auf Box 1."],
+  "unsicher|richtig": ["lucky",  "Richtig, aber brüchig. Bleibt im Umlauf."],
+  "unsicher|falsch":  ["",       "Normale Lücke. Beleg lesen, zurück auf Box 1."],
+  "geraten|richtig":  ["lucky",  "Geraten und getroffen — zählt nicht. Bleibt auf Box 1."],
+  "geraten|falsch":   ["",       "Geraten und daneben. Nachlesen."]
+};
+
+/* ==========================================================================
+   3 · TRAINER-ANSICHT
+   ========================================================================== */
+let sess = null;   // {items, i, modus:'uebung'|'klausur', start, konf, antworten:[]}
+
+function trainerHTML(){
+  const d = faelligePool().length;
+  const verteilung = [1,2,3,4,5].map(b =>
+    QUIZ.filter(q => (SRS[q.id]?.box || 1) === b).length);
+  return `
+  <div class="trainer">
+    <div class="due"><b>${d}</b><span>von ${QUIZ.length} Fragen heute fällig</span></div>
+    <div class="boxes">${verteilung.map((n,i) =>
+      `<div class="box"><b>${n}</b>Box ${i+1}<br>${INTERVALL[i+1]} T</div>`).join("")}</div>
+    <p style="margin-top:14px">
+      <button class="chip" data-start="faellig">Fällige üben · ${d}</button>
+      <button class="chip" data-start="alle">Alle mischen · ${QUIZ.length}</button>
+      <button class="chip" data-start="klausur">Klausur · ${QUIZ.length} Fragen, ${META.klausurMin || 60} Min</button>
+      <button class="chip" data-start="schwach">Schwachstellen</button>
+    </p>
+    <p><button class="chip" id="export-anki">Als Anki/CSV exportieren</button>
+       <button class="chip" onclick="window.print()">Lernzettel drucken</button></p>
+    ${schwachstellenHTML()}
+    <div id="run"></div>
+  </div>`;
+}
+
+/* ---------- Schwachstellen-Tabelle (das, was ein Fortschrittsbalken nie zeigt) ---------- */
+function schwachstellenHTML(){
+  const stat = {};
+  JOURNAL.forEach(e => {
+    const s = stat[e.itemId] = stat[e.itemId] || {f:0, n:0, konf:0, thema:e.thema};
+    s.n++; if (!e.richtig){ s.f++; if (e.konf === "sicher") s.konf++; }
+  });
+  const top = Object.entries(stat)
+    .filter(([,s]) => s.f > 0)
+    .sort((a,b) => (b[1].f + 2*b[1].konf) - (a[1].f + 2*a[1].konf))
+    .slice(0, 12);
+  if (!top.length) return "";
+  return `<div class="card"><h3>Deine Schwachstellen</h3>
+    <table class="weak"><tbody>${top.map(([id,s]) => {
+      const q = QUIZ.find(x => x.id === id) || {frage:id};
+      return `<tr>
+        <td data-label="Frage">${esc(q.frage.slice(0,70))}</td>
+        <td data-label="Thema">${esc(s.thema)}</td>
+        <td data-label="Falsch" class="${s.konf ? "hot" : ""}">${s.f}× falsch${s.konf ? ` · ${s.konf}× selbstsicher` : ""}</td>
+      </tr>`;}).join("")}</tbody></table>
+    <p style="color:var(--muted);font-size:.8rem">Rot markiert = selbstsicher falsch. Das sind die,
+    die dich in der Klausur kosten — nicht die, bei denen du unsicher warst.</p></div>`;
+}
+
+/* ---------- Session starten ---------- */
+function startSession(modus){
+  let items;
+  if (modus === "faellig")      items = shuffle(faelligePool());          // Interleaving: quer über alle Module
+  else if (modus === "klausur") items = [...QUIZ].sort((a,b) => (a.modul||"").localeCompare(b.modul||""));
+  else if (modus === "schwach") items = QUIZ.filter(q => (SRS[q.id]?.fails||0) > 0);
+  else                          items = shuffle([...QUIZ]);
+  if (!items.length){ document.getElementById("run").innerHTML =
+    `<div class="card">Nichts fällig. Komm morgen wieder — oder nimm „Alle mischen".</div>`; return; }
+  sess = { items, i:0, modus, start:Date.now(), antworten:[], konf:null };
+  document.documentElement.classList.add("testing");
+  frage();
+  if (modus === "klausur") tickTimer();
+}
+function shuffle(a){ return a.sort(() => Math.random() - .5); }
+
+/* ---------- Eine Frage ---------- */
+function frage(){
+  const run = document.getElementById("run");
+  if (sess.i >= sess.items.length) return finish();
+  const q = sess.items[sess.i];
+  const klausur = sess.modus === "klausur";
+  run.innerHTML = `
+    ${klausur ? `<div class="timer" id="clock"></div>` : ""}
+    <div class="q">
+      <p class="kicker">${esc(q.thema)} · ${sess.i+1} / ${sess.items.length}</p>
+      <p><strong>${esc(q.frage)}</strong></p>
+      ${!klausur && !sess.konf ? `
+        <p style="color:var(--muted);font-size:.82rem">Erst festlegen: Wie sicher bist du?</p>
+        <div class="conf">
+          <button data-konf="sicher">Sicher</button>
+          <button data-konf="unsicher">Unsicher</button>
+          <button data-konf="geraten">Geraten</button>
+        </div>` : `
+        ${q.optionen.map((o,j) =>
+          `<button class="opt" data-j="${j}"><span class="kbd">${j+1}</span> ${esc(o)}</button>`).join("")}
+        ${!klausur ? `<p style="margin-top:10px"><button class="chip" id="tipp">🛟 Tipp — keine Ahnung?</button></p>` : ""}
+        <p style="color:var(--muted);font-size:.75rem;margin-top:8px">Tasten 1–4</p>`}
+    </div>`;
+
+  run.querySelectorAll("[data-konf]").forEach(b => b.onclick = () => { sess.konf = b.dataset.konf; frage(); });
+  run.querySelectorAll(".opt").forEach(b => b.onclick = () => antwort(+b.dataset.j));
+  const _tp=document.getElementById("tipp");
+  if(_tp) _tp.onclick=()=>{ if(typeof kollSay==="function"&&typeof tippFor==="function") kollSay(tippFor(q), 9000); };
+  if(typeof besideQuestion==="function") besideQuestion();
+}
+
+function antwort(j){
+  const q = sess.items[sess.i];
+  const korrekt = j === q.richtig;
+  const konf = sess.konf || "—";
+  sess.antworten.push({ id:q.id, thema:q.thema, gewaehlt:j, richtig:korrekt, konf });
+  JOURNAL.push({ itemId:q.id, thema:q.thema, ts:Date.now(), gewaehlt:j, richtig:korrekt, konf });
+  save("journal", JOURNAL.slice(-2000));
+  bewerte(q.id, korrekt && konf !== "geraten");        // geraten+richtig steigt NICHT auf
+  if (typeof LOG !== "undefined") LOG.add({karten:1});          // Toolbox: Session-Log
+  if (typeof PET !== "undefined") PET.reagiere(korrekt, konf);  // Toolbox: Pet reagiert
+
+  if (sess.modus === "klausur"){                        // keine Auflösung während der Klausur
+    sess.i++; sess.konf = null; return frage();
+  }
+
+  const run = document.getElementById("run");
+  run.querySelectorAll(".opt").forEach((o,k) => {
+    if (k === q.richtig) o.classList.add("ok");
+    else if (k === j)    o.classList.add("no");
+    o.disabled = true;
+  });
+  const [cls, txt] = URTEIL[`${konf}|${korrekt ? "richtig" : "falsch"}`] || ["", ""];
+  run.querySelector(".q").insertAdjacentHTML("beforeend", `
+    <div class="verdict ${cls}">${txt}</div>
+    ${q.warum ? `<p style="font-size:.86rem;margin-top:10px">${esc(q.warum)}</p>` : ""}
+    <p class="beleg">${esc(q.beleg || "")}</p>
+    <p><button class="chip" id="next">Weiter <span class="kbd">Leertaste</span></button></p>`);
+  document.getElementById("next").onclick = () => { sess.i++; sess.konf = null; frage(); };
+}
+
+/* ---------- Timer ---------- */
+function tickTimer(){
+  const ende = sess.start + (META.klausurMin || 60) * 60000;
+  clearInterval(window._t);
+  window._t = setInterval(() => {
+    const c = document.getElementById("clock");
+    if (!sess || sess.modus !== "klausur"){ clearInterval(window._t); return; }
+    const rest = ende - Date.now();
+    if (rest <= 0){ clearInterval(window._t); finish(); return; }
+    if (c){
+      const m = Math.floor(rest/60000), s = Math.floor(rest%60000/1000);
+      c.textContent = `${m}:${String(s).padStart(2,"0")}`;
+      c.classList.toggle("warn", rest < 5*60000);
+    }
+  }, 250);
+}
+
+/* ---------- Auswertung ---------- */
+function finish(){
+  document.documentElement.classList.remove("testing");
+  clearInterval(window._t);
+  const proThema = {}, matrix = {sr:0, sf:0, ur:0, uf:0};
+  sess.antworten.forEach(a => {
+    const t = proThema[a.thema] = proThema[a.thema] || {r:0, n:0};
+    t.n++; if (a.richtig) t.r++;
+    if (a.konf === "sicher") a.richtig ? matrix.sr++ : matrix.sf++;
+    else                      a.richtig ? matrix.ur++ : matrix.uf++;
+  });
+  const r = sess.antworten.filter(a => a.richtig).length, n = sess.antworten.length;
+  const proz = Math.round(100 * r / n);
+  const note = NOTE(proz);
+  document.getElementById("run").innerHTML = `
+    <div class="card">
+      <p class="score">${r} / ${n} · ${proz} %${note ? ` · ${note}` : ""}</p>
+      <table><tbody>${Object.entries(proThema).map(([t,v]) =>
+        `<tr><td data-label="Thema">${esc(t)}</td><td data-label="Ergebnis">${v.r} / ${v.n}</td></tr>`).join("")}</tbody></table>
+      ${matrix.sf ? `<div class="verdict danger" style="margin-top:12px">
+        <strong>${matrix.sf} × selbstsicher falsch.</strong> Das ist deine Prioritätenliste — nicht der Prozentwert.
+        Alle davon stehen jetzt in Box 1 und kommen morgen wieder.</div>` : ""}
+      <p><button class="chip" onclick="location.reload()">Zurück zum Trainer</button></p>
+    </div>`;
+}
+
+/* Notenschlüssel — an die Prüfungsordnung anpassen, sonst weglassen */
+function NOTE(p){
+  if (!META.notenschluessel) return null;
+  const s = META.notenschluessel.find(([min]) => p >= min);
+  return s ? s[1] : "nicht bestanden";
+}
+
+/* ==========================================================================
+   4 · TASTATUR
+   ========================================================================== */
+document.addEventListener("keydown", e => {
+  if (!sess) return;
+  if (e.key >= "1" && e.key <= "4"){
+    const b = document.querySelector(`.opt[data-j="${+e.key - 1}"]:not([disabled])`);
+    if (b) b.click();
+  }
+  if (e.code === "Space"){ const n = document.getElementById("next"); if (n){ e.preventDefault(); n.click(); } }
+});
+
+/* ==========================================================================
+   5 · EXPORT (Anki / CSV)
+   ========================================================================== */
+document.addEventListener("click", e => {
+  if (e.target.id !== "export-anki") return;
+  const zeilen = [
+    ...CARDS.map(c => [c.front, c.back, c.thema || ""]),
+    ...QUIZ.map(q => [q.frage, q.optionen[q.richtig] + (q.warum ? " — " + q.warum : ""), q.beleg || ""])
+  ].map(r => r.map(f => String(f).replace(/\t/g, " ")).join("\t")).join("\n");
+  const url = URL.createObjectURL(new Blob([zeilen], {type:"text/tab-separated-values"}));
+  const a = Object.assign(document.createElement("a"),
+    { href:url, download:(META.titel || "karten") + ".tsv" });
+  a.click(); URL.revokeObjectURL(url);
+});
+
+
+
+const $ = s => document.querySelector(s);
+const LINES = ["Inklusion heißt: Vielfalt willkommen heißen. Auch dich, nachts um zwei vor der Klausur.", "Teilnahme, Teilgabe, Teilsein — sitzt die Trias im Schlaf? Nein? Dann üben.", "Ein Nilpferd ist im Wasser erstaunlich beweglich. Los, eine Karte noch.", "Der Wissens-Check am 23.07. rückt näher. Ich zähl mit.", "Sportwissenschaft ist eine Querschnittswissenschaft. Frag mich in der Klausur.", "Skaten statt Ritalin — aber Lernen statt Prokrastinieren, ja?", "Metzer 58 läuft, du lernst. Passt zusammen.", "Testosteron: Männer im Schnitt 17 nmol/l. Merk's dir, Konjer fragt bestimmt.", "Die Glücksliga kommt aus Dänemark. Nicht raten — wissen.", "Die fälligen Karten stapeln sich. Ich krieg Hunger.", "Integration gliedert ein. Inklusion verändert das System. Verwechsel das nicht.", "Auch ein Hippo macht Pause. Aber erst nach fünf Karten.", "Blindenfußball: Vertrauen, Kooperation, Teilhabe. Und du: Fokus.", "Self-efficacy, Kollege. Du schaffst das — aber nur, wenn du's tust.", "Fluide Intelligenz nimmt ab, kristalline bleibt. Trost fürs Altwerden.", "Unified heißt: mit und ohne Behinderung im selben Team. Simpel, prüfungsrelevant.", "Reflexionsbericht nicht vergessen — fünf Seiten, Mitte September.", "Ich bin ein Nilpferd und weiß Dinge über Onkologie-Nachsorge. Frag mich.", "Unsicher bei ICD-10? Psychische Störungen: Kapitel F. Bitte.", "Der präfrontale Kortex reift bis ca. 30. Deiner arbeitet gerade — nutz ihn.", "Pause ist kein Nichtstun, sondern verteiltes Üben. Wissenschaft, kein Witz.", "Wer 'sicher' klickt und falsch liegt, lernt am meisten. Trau dich.", "TREE-Modell: Teaching, Rules, Environment, Equipment. Vier Stellschrauben.", "Chris Nikic hat den Ironman gefinisht. Du finishst dieses Quiz.", "'Auffällig' ist relativ zur Norm. Welche fünf Normbegriffe? Na?", "Zieh mich ruhig herum. Aber der Stoff verschiebt sich nicht von selbst.", "Natursport in der Onkologie: 0 Verletzungen 2022–2024. Beeindruckend, oder?", "Dramatisierung vs. Entdramatisierung — reflexive Koedukation. Klingt fancy, ist prüfbar.", "2060 ist jede dritte Person über 65. Bewegung hält das Hirn plastisch.", "Kein Fake-Wissen hier. Jede Karte hat einen Beleg. Wie ich, nur weniger niedlich.", "Testosteron-Vorteil: 20–50 % bei Schnellkraft, ~10 % Ausdauer. Details zählen.", "Ein wildes Prüfungsthema erscheint! Du setzt … Karteikarte ein.", "Das IOC kippte 2021 seine 5-nmol/l-Regel. Danach: Chaos. Konjer liebt sowas.", "Hör auf zu scrollen, fang an zu klicken. Fällige Karten warten.", "Barrierefrei ist auch dieser Trainer. Sogar für Nilpferde lesbar.", "ADHS: mindestens 6 Monate, in mehr als einer Umgebung. Diagnosekriterium, merken.", "Teilsein schlägt Teilnahme. Wer den Unterschied kennt, punktet bei Jürgens.", "Ich hab keinen Kalender, nur dich. Der 23.07. kommt.", "Kombiniertes körperlich-kognitives Training wirkt am besten. Fürs Alter merken.", "Ein Nilpferd rennt bis 30 km/h. Du rennst durch 12 Sitzungen. Los.", "Emotionale und soziale Förderung — Ziel ist die Rückführung. Kompassschule, Sitzung 03.", "Wer nur liest, lernt nicht. Abruf ist alles. Klick 'Fällige üben'.", "Prävalenz sind alle Erkrankten, Inzidenz die neuen Fälle. Nicht vertauschen.", "Special Olympics ist nicht Paralympics. Falls das jemand fragt.", "Du hast 102 Fragen. Ich hab unendlich Geduld. Fang an.", "Der Index für Inklusion ist ein Entwicklungsinstrument, kein Diagnosetool.", "Segeln und Reiten kennen keine Geschlechterklassen. Ausnahmen, die man kennt.", "Sitzvolleyball ist Inklusion in Aktion: Anpassung statt Ausschluss.", "Zwei Minuten Pause, dann fünf Karten. Deal?", "Ich bin dein Kollege, nicht dein Chef. Aber lern trotzdem.", "Gender ist sozial (Butler), sex biologisch. Feiner, prüfbarer Unterschied.", "Methylphenidat hemmt den Reuptake von Dopamin und Noradrenalin — im Striatum.", "Heterogenität ist ein Konstrukt: kategorien- und standortabhängig. Leineweber grüßt.", "Noch wach? Gut. Der Stoff auch.", "Fatigue runter, Lebensqualität rauf — dafür bewegen sich Kids in der Onkologie.", "Hältst du mich fest und ziehst, wander ich mit. Praktisch, oder?", "Reckahner Reflexionen und 'neue Autorität' — die Grundhaltung der Kompassschule.", "Ein Hippo vergisst nie. Du schon. Deshalb: Wiederholung, verteilt.", "World Games 2027 in Chile — Ziel des Unified-Teams Münster. Dein Ziel: bestehen.", "Letzte Karte für heute? Von wegen. Noch eine."];
+const MODULE_LINES = {"start": ["12 Sitzungen, ein Wissens-Check am 23.07. Fang oben an.", "Klick eine Zeile im Überblick — ich roll dir hinterher.", "Inklusion im Sport: Sportwissenschaft als Querschnittswissenschaft. Merk's dir."], "s01": ["Querschnittswissenschaft — das ist der rote Faden dieser Vorlesung.", "UN-BRK, Artikel 30: Teilhabe an Sport. Kommt aus dieser Sitzung.", "Integration gliedert ein, Inklusion verändert das System. Auftaktstoff.", "Modul-5-Abschluss: 60-Minuten-Klausur. Steht gleich hier."], "s02": ["Fünf Normbegriffe: sozial, statistisch, funktional, ideal, subjektiv. Sitzt das?", "Psychische Störungen? ICD-10, Kapitel F. Nicht raten.", "Internalisiert vs. externalisiert — Petermann lässt grüßen.", "Metzer 58 läuft hier unten. Inklusiver Punkrock, passt zum Thema."], "s03": ["Kompassschule: Intensität, Ökologie, Integration — die drei Diagnosekriterien.", "Multiprofessionell: Sonderpädagogik, Jugendhilfe, Schulpsychologie.", "Ziel der Förderung? Die Rückführung. Merk's."], "s04": ["ADHS nach ICD-11: mindestens 6 Monate, in mehr als einer Umgebung.", "Methylphenidat hemmt den Reuptake — Dopamin und Noradrenalin, im Striatum.", "Skaten statt Ritalin: 16 Wochen Intervention, Federführung Titus Dittmann."], "s05": ["Fluide Intelligenz runter, kristalline bleibt. Trost fürs Altwerden.", "Kombiniertes körperlich-kognitives Training wirkt am besten.", "Pflegeheim: nur ~1007 Schritte am Tag. Bewegung tut not."], "s06": ["TREE-Modell: Teaching, Rules, Environment, Equipment. Vier Stellschrauben.", "Heterogenität ist ein Konstrukt — kategorien- und standortabhängig.", "Drei-Ebenen-Modell: Ziel, Konstrukt, Unterricht. Leineweber-Stoff."], "s07": ["Blindenfußball: Vertrauen, Kooperation, Teilhabe.", "Winnebeck ist Guide der Nationalmannschaft — Praxis pur."], "s08": ["Natursport in der Onkologie: 0 Verletzungen 2022–2024. Beachtlich.", "Krebs ist die zweithäufigste Todesursache im Kindesalter. Bewegung hilft.", "Take-home: Potentiale über Limitierungen stellen."], "s09": ["Die Glücksliga kommt aus Dänemark — die LykkeLiga.", "Unified: mit und ohne Behinderung im selben Team. Special Olympics.", "Ziel des Unified-Teams Münster: World Games 2027 in Chile."], "s10": ["Teilnahme, Teilgabe, Teilsein — die Trias. Jürgens fragt danach.", "Regelmodifikationen: Personal, Raum, Zeit, Handlungen, Inventar.", "Gleichberechtigte Teilhabe ist ein Recht (Tiemann & Hofmann)."], "s11": ["Testosteron: Männer im Schnitt 17 nmol/l. Konjer-Stoff.", "Das IOC kippte 2021 seine 5-nmol/l-Regel. Danach: Chaos.", "Gender ist sozial (Butler), sex biologisch. Feiner Unterschied.", "Last Week Tonight und Phenix Kühnert laufen hier unten — schau rein."], "quiz": ["Jetzt zählt's. Konfidenz-Abfrage nutzen: wo bist du sicher falsch?", "Klausurmodus: alle Fragen, Uhr läuft, keine Auflösung. Generalprobe.", "Klick eine Karteikarte — ich stell mich daneben. Und du lernst.", "Schluss mit lustig — Probeklausur. Keiner hat hier was zu sagen."]};
+const REACT_OK = ["Sitzt.", "Gefüttert.", "Weiter so.", "Sauber."];
+const REACT_NO = ["Zurück auf Box 1.", "Nochmal nachlesen.", "Passiert. Weiter."];
+const pick = a => a[Math.floor(Math.random()*a.length)];
+let followMode = load("follow", true);   // Taste 'a': Kollege fliegt zu Karten/Fragen (an/aus)
+const focusOn = () => document.documentElement.classList.contains("focusmode");
+
+const LOG = { d: load("log", {}),
+  add(x){ const k=new Date().toISOString().slice(0,10);
+    const e=this.d[k]=this.d[k]||{min:0,karten:0};
+    e.min+=x.minuten||0; e.karten+=x.karten||0; save("log", this.d); } };
+
+/* ===== Pomodoro ===== */
+const PM = load("pm", {fokus:45, pause:5});
+let pmPhase="fokus", pmRest=PM.fokus*60, pmRun=false, pmInt=null, pmWake=null;
+const pmFmt = s => Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
+function pmRender(){
+  $("#pomo-time").textContent = pmFmt(pmRest);
+  $("#pomo-phase").textContent = pmPhase==="fokus" ? "Fokus" : "Pause";
+  $("#pomo").classList.toggle("pause", pmPhase==="pause");
+  $("#pomo-play").textContent = pmRun ? "❚❚" : "▶";
+  $("#pomo-pill").classList.toggle("run", pmRun);
+  document.title = pmRun ? pmFmt(pmRest)+" · "+(pmPhase==="fokus"?"Fokus":"Pause")+" — "+META.titel : META.titel;
+}
+function pmLoop(){ pmInt=setInterval(()=>{ if(--pmRest<=0){ pmSwitch(); } pmRender(); }, 1000); }
+async function pmStart(){ pmRun=true; try{ pmWake=await navigator.wakeLock?.request("screen"); }catch(_){}
+  if(pmPhase==="fokus") setFocus(true,false);        // Idee 2: Fokus-Modus, solange die Uhr läuft
+  clearInterval(pmInt); pmLoop(); pmRender(); }
+function pmStop(){ pmRun=false; clearInterval(pmInt); pmWake?.release?.(); pmWake=null; setFocus(false,false); pmRender(); }
+function pmSwitch(){ clearInterval(pmInt);
+  if(pmPhase==="fokus"){ LOG.add({minuten:PM.fokus}); pmPhase="pause"; pmRest=PM.pause*60; setFocus(false,false);
+    const due = typeof faelligePool==="function" ? faelligePool().length : 0;
+    kollSay(due ? "Pause. "+due+" fällige Karten warten im Selbsttest." : "Pause. Sauber gearbeitet.");
+  } else { pmPhase="fokus"; pmRest=PM.fokus*60; setFocus(true,false); kollSay("Weiter. Fokus an."); }
+  clearInterval(pmInt); pmLoop(); pmRender();
+}
+$("#pomo-pill").addEventListener("click", ()=> pmRun ? pmStop() : pmStart());
+function pmSel(){
+  document.querySelectorAll("#pomo-fokus button").forEach(b=>b.classList.toggle("sel", +b.dataset.f===PM.fokus));
+  document.querySelectorAll("#pomo-pause button").forEach(b=>b.classList.toggle("sel", +b.dataset.p===PM.pause));
+}
+document.querySelectorAll("#pomo-fokus button").forEach(b=> b.addEventListener("click", e=>{
+  e.stopPropagation(); PM.fokus=+b.dataset.f; save("pm",PM);
+  if(pmPhase==="fokus" && !pmRun) pmRest=PM.fokus*60; pmSel(); pmRender(); }));
+document.querySelectorAll("#pomo-pause button").forEach(b=> b.addEventListener("click", e=>{
+  e.stopPropagation(); PM.pause=+b.dataset.p; save("pm",PM);
+  if(pmPhase==="pause" && !pmRun) pmRest=PM.pause*60; pmSel(); pmRender(); }));
+pmSel(); pmRender();
+
+let AC=null;
+$("#pomo-ambient").addEventListener("click", e=>{ e.stopPropagation();
+  if(AC){ AC.close(); AC=null; $("#pomo-ambient").classList.remove("on"); $("#pomo-ambient").textContent="♪ Ambient"; return; }
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  const len=AC.sampleRate*2, buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  const src=AC.createBufferSource(); src.buffer=buf; src.loop=true;
+  const lp=AC.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1000;
+  const g=AC.createGain(); g.gain.value=.08;
+  src.connect(lp).connect(g).connect(AC.destination); src.start();
+  $("#pomo-ambient").classList.add("on"); $("#pomo-ambient").textContent="♪ An"; });
+
+$("#pomo-backup").addEventListener("click", e=>{ e.stopPropagation();
+  const dump={ srs:(typeof SRS!=="undefined"?SRS:{}), journal:(typeof JOURNAL!=="undefined"?JOURNAL:[]), log:LOG.d, pm:PM };
+  const url=URL.createObjectURL(new Blob([JSON.stringify(dump)],{type:"application/json"}));
+  Object.assign(document.createElement("a"), {href:url, download:(META.titel||"fortschritt")+".json"}).click();
+  URL.revokeObjectURL(url); });
+
+/* Fokus-Modus: Vignette + Timer-Kopplung + Tunnel + Ritual */
+let riteT=null;
+function focusRitual(){                              // Idee 4: kurzer Atemzug-Übergang
+  let el=$("#focus-rite");
+  if(!el){ el=document.createElement("div"); el.id="focus-rite";
+    el.innerHTML='<div class="breath"></div><div class="rite-txt">Durchatmen …</div><div class="rite-skip">Klick zum Überspringen</div>';
+    document.body.appendChild(el); el.addEventListener("click", ()=> endRite()); }
+  el.classList.remove("run"); el.classList.add("show"); void el.offsetWidth; el.classList.add("run");
+  try{ const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain(); o.type="sine"; o.frequency.value=196;
+    o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(0, ac.currentTime); g.gain.linearRampToValueAtTime(.11, ac.currentTime+.5);
+    g.gain.linearRampToValueAtTime(0, ac.currentTime+2.2); o.start(); o.stop(ac.currentTime+2.3);
+    setTimeout(()=>{ try{ac.close();}catch(_){}}, 2600);
+  }catch(_){}
+  clearTimeout(riteT); riteT=setTimeout(endRite, 2500);
+}
+function endRite(){ const el=$("#focus-rite"); if(!el) return; clearTimeout(riteT); el.classList.remove("run","show"); }
+function setFocus(on, persist){
+  const was=document.documentElement.classList.contains("focusmode");
+  document.documentElement.classList.toggle("focusmode", on);
+  const bt=$("#pomo-focus"); if(bt){ bt.classList.toggle("on", on); bt.textContent = on?"Fokus-Modus: an":"Fokus-Modus"; }
+  if(persist) save("focus", on);
+  if(on && !was){ focusRitual();
+    if(document.documentElement.classList.contains("testing")){ const r=$("#run"); if(r) setTimeout(()=>r.scrollIntoView({block:"center"}),150); } }
+}
+(function(){ const on=load("focus",false); document.documentElement.classList.toggle("focusmode", on);
+  const bt=$("#pomo-focus"); bt.classList.toggle("on", on); bt.textContent = on?"Fokus-Modus: an":"Fokus-Modus";
+  bt.addEventListener("click", e=>{ e.stopPropagation();
+    setFocus(!document.documentElement.classList.contains("focusmode"), true); }); })();
+
+/* ===== Kollege ===== */
+const koll=$("#kollege"), bub=$("#koll-bubble"), kimg=$("#koll-img");
+const SIT="hippo_sit.webp", IDLE="hippo_idle.webp", WALK="hippo_walk.webp", OUTFIT="hippo_outfit.webp", DRAG="hippo_drag.webp";
+const ROLLF=["roll0.webp","roll1.webp","roll2.webp","roll3.webp","roll4.webp"]; ROLLF.forEach(s=>{const i=new Image(); i.src=s;});
+let awake=false, walkT=null, settleT=null, rollRAF=0, kdrag=null, kmoved=false, suppressClick=false;
+let homed=false, homeSide=1, reenterT=null;
+let vx=0, vy=0, lastMoveT=0, lastMoveX=0, lastMoveY=0, flingRAF=0;   // Wurf-Physik
+function setImg(src){ if(kimg.getAttribute("src")!==src) kimg.setAttribute("src", src); }
+function idleImg(){ return (typeof aktiv!=="undefined" && aktiv==="quiz") ? OUTFIT : IDLE; }  // Quizseite: schick angezogen
+function walkImg(){ return (typeof aktiv!=="undefined" && aktiv==="quiz") ? OUTFIT : WALK; }  // Anzug auch beim Laufen
+function dragImg(){ return (typeof aktiv!=="undefined" && aktiv==="quiz") ? OUTFIT : DRAG; }  // beim Ziehen: Zappel-Pose
+function cloudSync(){ koll.classList.toggle("onCloud", (typeof aktiv!=="undefined" && aktiv==="quiz")); }  // Quizseite: Wolke + Schweben
+function pinAbs(){ const r=koll.getBoundingClientRect(); koll.style.position="absolute";
+  koll.style.left=Math.round(r.left+window.scrollX)+"px"; koll.style.top=Math.round(r.top+window.scrollY)+"px";
+  koll.style.right="auto"; koll.style.bottom="auto"; homed=false; }
+function besideCard(card){                          // Hippo fliegt neben die angeklickte Karte
+  if(!followMode) return;
+  if(typeof aktiv==="undefined" || aktiv!=="quiz") return;
+  const cr=card.getBoundingClientRect(), w=koll.offsetWidth, gap=10;
+  const ty=cr.top + cr.height/2;
+  const tx=(cr.right+gap+w < window.innerWidth) ? (cr.right+gap+w/2) : (cr.left-gap-w/2);
+  walkTo(tx, ty, "stay");
+}
+function besideQuestion(){                           // Hippo fliegt im Selbsttest neben die Frage
+  if(!followMode) return;
+  if(typeof aktiv==="undefined" || aktiv!=="quiz") return;
+  const q=document.querySelector("#run .q"); if(!q) return;
+  const cr=q.getBoundingClientRect(), w=koll.offsetWidth, gap=14;
+  const ty=cr.top + Math.min(cr.height/2, 130);
+  const tx=(cr.right+gap+w < window.innerWidth) ? (cr.right+gap+w/2) : (cr.left-gap-w/2);
+  walkTo(tx, ty, "stay");
+}
+function tippFor(q){                                 // milder Tipp: eine falsche Option streichen + Thema nennen
+  const wrong=q.optionen.map((o,i)=>i).filter(i=>i!==q.richtig);
+  const drop=q.optionen[wrong[Math.floor(Math.random()*wrong.length)]] || "";
+  const kurz=drop.length>44 ? drop.slice(0,42)+"…" : drop;
+  return pick([
+    "Streich schon mal „"+kurz+"“ — das ist es nicht. Bleiben drei, den Rest machst du.",
+    "Kleiner Schubs: Es geht um "+q.thema+". Und „"+kurz+"“ kannst du vergessen.",
+    "„"+kurz+"“ ist gelaufen. Denk an "+q.thema+" — dann klick."
+  ]);
+}
+const CAVE_FX=0.755, CAVE_FY=0.605, EDGE_GAP=36;
+function nearestHome(){ const r=koll.getBoundingClientRect(); const cx=r.left+r.width/2;
+  const onLeft = cx < window.innerWidth/2;
+  return { x: onLeft ? (koll.offsetWidth/2 + EDGE_GAP) : (window.innerWidth - koll.offsetWidth/2 - EDGE_GAP),
+           y: Math.round(window.innerHeight*0.5) }; }
+function caveTargetViewport(){ const cave=document.querySelector(".habitat-img"); const r=cave&&cave.getBoundingClientRect();
+  if(!r || r.height<10) return null; return { x: r.left + r.width*CAVE_FX, y: r.top + r.height*CAVE_FY }; }
+
+function dockToCave(){                          // sitzt in der Höhle, scrollt mit
+  const cave=document.querySelector(".habitat-img"); const r=cave && cave.getBoundingClientRect();
+  if(!r || r.height<10) return false;
+  koll.style.position="absolute";
+  koll.style.left=Math.round(r.left+window.scrollX + r.width*CAVE_FX - koll.offsetWidth/2)+"px";
+  koll.style.top =Math.round(r.top +window.scrollY + r.height*CAVE_FY - koll.offsetHeight/2)+"px";
+  koll.style.right="auto"; koll.style.bottom="auto"; return true;
+}
+function freeToFixed(){
+  if(koll.style.position!=="fixed"){ const r=koll.getBoundingClientRect();
+    koll.style.position="fixed"; koll.style.left=Math.round(r.left)+"px"; koll.style.top=Math.round(r.top)+"px"; koll.style.right="auto"; koll.style.bottom="auto"; }
+}
+/* Ruht sitzend in der Höhle bis zur ersten Interaktion */
+function rest(){
+  if(awake) return;
+  if(dockToCave()){ koll.style.transition=""; setImg(SIT); }
+  else { freeToFixed(); const h=nearestHome(); koll.style.transition="";
+    koll.style.left=Math.round(h.x-koll.offsetWidth/2)+"px"; koll.style.top=Math.round(h.y-koll.offsetHeight/2)+"px";
+    setImg(idleImg()); awake=true; }
+}
+(function(){ if(!dockToCave()){ const c=document.querySelector(".habitat-img"); if(c) c.addEventListener("load", rest, {once:true}); else rest(); } setImg(SIT); })();
+new MutationObserver(rest).observe(document.getElementById("app"), {childList:true});
+addEventListener("resize", ()=>{ if(!awake) rest(); });
+
+function scheduleHome(){ clearTimeout(settleT); settleT=setTimeout(goHome, 3000); }  // im Ruhezustand an die nächste Seite
+function goHome(){ const h=nearestHome(); walkTo(h.x, h.y, "home"); }
+function walkToCave(){ const t=caveTargetViewport(); if(t) walkTo(t.x, t.y, "cave"); }
+function rollIn(dir){                             // Seitenwechsel: rollt ins Bild (dir 1=rechts, -1=links)
+  awake=true; homed=false; clearTimeout(walkT); clearTimeout(settleT); clearTimeout(reenterT); clearTimeout(bubT); bub.classList.remove("show");
+  cancelAnimationFrame(rollRAF); cancelAnimationFrame(flingRAF); freeToFixed(); koll.classList.remove("onCloud");
+  const w=koll.offsetWidth, h=koll.offsetHeight;
+  const startX = dir>0 ? -(w+24) : window.innerWidth+24;
+  const landX  = dir>0 ? Math.round(window.innerWidth - w - EDGE_GAP) : EDGE_GAP;   // gegenüberliegender Rand
+  const y = Math.round(window.innerHeight*0.5 - h/2);
+  koll.style.transition="none"; koll.style.top=y+"px"; koll.style.right="auto"; koll.style.bottom="auto"; koll.style.left=startX+"px";
+  koll.classList.toggle("faceR", dir>0);         // nach rechts -> Gif invertieren
+  const total=Math.abs(landX-startX);
+  const dur=Math.max(1600, Math.min(3200, Math.round(total*2.6)));
+  const PPF=58;                                   // Pixel pro Frame: Drehung ~ Strecke -> bremst mit ab
+  const ease=t=> 1-Math.pow(1-t,2.4);             // ease-out: langsamer zum Ende hin
+  let s0=null;
+  const step=(ts)=>{
+    if(s0===null) s0=ts;
+    const t=Math.min(1,(ts-s0)/dur), e=ease(t);
+    const x=startX+(landX-startX)*e;
+    koll.style.left=Math.round(x)+"px";
+    setImg(ROLLF[Math.floor(Math.abs(x-startX)/PPF) % ROLLF.length]);
+    if(t<1) rollRAF=requestAnimationFrame(step);
+    else { koll.classList.remove("faceR"); cloudSync(); setImg(idleImg());
+           if(typeof aktiv!=="undefined" && aktiv==="quiz") quizEntry(); else scheduleHome(); }
+  };
+  rollRAF=requestAnimationFrame(step);
+}
+function quizEntry(){                              // Sternseite: nach dem Reinrollen schnell nach oben fliegen + Ansage
+  clearTimeout(settleT); clearTimeout(reenterT); clearTimeout(bubT);
+  const w=koll.offsetWidth;
+  const targetY=Math.round(window.innerHeight*0.12);
+  const targetX=Math.round(window.innerWidth*0.5 - w/2);
+  koll.style.position="fixed"; koll.style.right="auto"; koll.style.bottom="auto";
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    koll.style.transition="left .7s cubic-bezier(.4,0,.2,1), top .72s cubic-bezier(.34,1.25,.5,1)";
+    koll.style.left=targetX+"px"; koll.style.top=targetY+"px"; }));
+  setTimeout(()=>{ koll.style.transition="";
+    kollSay("Jetzt ist Schluss mit lustig. Wir sind in Probeklausur, keinen hat hier was zu sagen!", 10000); }, 780);
+  settleT=setTimeout(goHome, 11200);              // nach der Ansage an die Seite absetzen
+}
+function pinToPageSide(){                          // an die Seite der SEITE heften (scrollt mit), nicht an den Screen
+  const r=koll.getBoundingClientRect();
+  homeSide = (r.left + r.width/2 < window.innerWidth/2) ? -1 : 1;
+  koll.style.position="absolute";
+  koll.style.left=Math.round(r.left+window.scrollX)+"px";
+  koll.style.top =Math.round(r.top +window.scrollY)+"px";
+  koll.style.right="auto"; koll.style.bottom="auto";
+  homed=true;
+}
+function arrive(dest){
+  koll.style.transition=""; koll.classList.remove("faceR"); cloudSync();
+  if(dest==="cave"){ setImg(SIT); dockToCave(); homed=false; }
+  else if(dest==="home"){ setImg(idleImg()); pinToPageSide(); }
+  else if(dest==="stay"){ setImg(idleImg()); pinAbs(); }   // neben der Karte stehen bleiben
+  else { setImg(idleImg()); scheduleHome(); }          // 'free'
+}
+function reenter(){                                // nach Idle-Zeit aus dem Offscreen an den Bildschirmrand laufen
+  if(focusOn()) return;                             // Idee 1: im Fokus bleibt er still
+  if(!homed) return; homed=false;
+  cancelAnimationFrame(rollRAF); clearTimeout(walkT);
+  const w=koll.offsetWidth, h=koll.offsetHeight;
+  const y=Math.round(window.innerHeight*0.5 - h/2);
+  const startX = homeSide<0 ? -(w+20) : window.innerWidth+20;
+  const endX   = homeSide<0 ? EDGE_GAP : window.innerWidth - w - EDGE_GAP;
+  koll.style.position="fixed"; koll.style.transition="none";
+  koll.style.top=y+"px"; koll.style.right="auto"; koll.style.bottom="auto"; koll.style.left=startX+"px";
+  koll.classList.toggle("faceR", endX>startX);
+  setImg(walkImg());
+  const dist=Math.abs(endX-startX), dur=Math.max(500, Math.min(1800, Math.round(dist*2.6)));
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    koll.style.transition="left "+dur+"ms linear"; koll.style.left=endX+"px"; }));
+  walkT=setTimeout(()=>{ koll.style.transition=""; koll.classList.remove("faceR"); cloudSync(); setImg(idleImg()); pinToPageSide(); }, dur+40);
+}
+addEventListener("scroll", ()=>{                   // wenn er (an der Page angeheftet) offscreen scrollt -> nach Idle-Zeit reinlaufen
+  if(focusOn()) return;                             // Idee 1: im Fokus kein Herumlaufen
+  if(!homed) return;
+  const r=koll.getBoundingClientRect();
+  const off = (r.bottom < 24) || (r.top > window.innerHeight - 24);
+  clearTimeout(reenterT);
+  if(off) reenterT=setTimeout(reenter, 3000);
+}, {passive:true});
+function walkTo(tx, ty, dest){                    // dest: 'free' (steht, dann Seite) | 'home' | 'cave' (sitzt)
+  dest = dest || "free";
+  awake=true; homed=false; clearTimeout(walkT); clearTimeout(settleT); clearTimeout(reenterT); cancelAnimationFrame(rollRAF); cancelAnimationFrame(flingRAF); freeToFixed();
+  const r=koll.getBoundingClientRect();
+  koll.style.transition="none"; koll.style.left=Math.round(r.left)+"px"; koll.style.top=Math.round(r.top)+"px";
+  let dX=Math.max(4, Math.min(window.innerWidth -koll.offsetWidth -4, tx-koll.offsetWidth/2));
+  let dY=Math.max(4, Math.min(window.innerHeight-koll.offsetHeight-4, ty-koll.offsetHeight/2));
+  const dx=dX-r.left, dy=dY-r.top, dist=Math.hypot(dx,dy);
+  if(dist<6){ arrive(dest); return; }
+  koll.classList.toggle("faceR", dx>0);          // Ziel rechts -> Animation spiegeln
+  setImg(walkImg());
+  const dur=Math.max(340, Math.min(3000, Math.round(dist*4)));
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    koll.style.transition="left "+dur+"ms linear, top "+dur+"ms linear";
+    koll.style.left=Math.round(dX)+"px"; koll.style.top=Math.round(dY)+"px"; }));
+  walkT=setTimeout(()=> arrive(dest), dur+40);
+}
+
+function fling(){                                   // Wurf: Impuls + Reibung + Wand-Abpraller
+  awake=true; homed=false; clearTimeout(walkT); clearTimeout(settleT); clearTimeout(reenterT);
+  cancelAnimationFrame(rollRAF); cancelAnimationFrame(flingRAF); freeToFixed();
+  koll.classList.remove("faceR"); cloudSync(); koll.style.transition=""; setImg(dragImg());
+  const rr=koll.getBoundingClientRect(); let x=rr.left, y=rr.top, ang=0, last=performance.now();
+  const w=koll.offsetWidth, h=koll.offsetHeight, gap=4, rest=0.6;
+  const step=(ts)=>{
+    let dt=ts-last; last=ts; if(dt>40) dt=40;
+    x+=vx*dt; y+=vy*dt;
+    const maxX=window.innerWidth-w-gap, maxY=window.innerHeight-h-gap;
+    if(x<gap){ x=gap; vx=-vx*rest; } else if(x>maxX){ x=maxX; vx=-vx*rest; }
+    if(y<gap){ y=gap; vy=-vy*rest; } else if(y>maxY){ y=maxY; vy=-vy*rest; }
+    const f=Math.pow(0.94, dt/16.67); vx*=f; vy*=f;
+    ang += vx*dt*0.12;
+    koll.style.left=Math.round(x)+"px"; koll.style.top=Math.round(y)+"px";
+    kimg.style.transform="rotate("+ang.toFixed(1)+"deg)";
+    if(Math.hypot(vx,vy)>0.03){ flingRAF=requestAnimationFrame(step); }
+    else { kimg.style.transform=""; setImg(idleImg()); cloudSync(); scheduleHome(); }
+  };
+  flingRAF=requestAnimationFrame(step);
+}
+
+koll.addEventListener("pointerdown", e=>{ if(e.button!==0) return; e.preventDefault();
+  awake=true; homed=false; clearTimeout(walkT); clearTimeout(settleT); clearTimeout(reenterT); cancelAnimationFrame(rollRAF); cancelAnimationFrame(flingRAF);
+  vx=0; vy=0; lastMoveT=performance.now(); lastMoveX=e.clientX; lastMoveY=e.clientY;
+  const r=koll.getBoundingClientRect();
+  koll.style.transition=""; koll.style.position="fixed"; koll.style.left=Math.round(r.left)+"px"; koll.style.top=Math.round(r.top)+"px"; koll.style.right="auto"; koll.style.bottom="auto";
+  kdrag={dx:e.clientX-r.left, dy:e.clientY-r.top}; kmoved=false; cloudSync(); koll.classList.add("dragging"); setImg(dragImg()); });
+window.addEventListener("pointermove", e=>{ if(!kdrag) return;
+  if(!kmoved){ kmoved=true; koll.classList.remove("faceR"); setImg(dragImg()); }
+  const now=performance.now(), dt=now-lastMoveT;
+  if(dt>0){ vx=0.6*vx+0.4*(e.clientX-lastMoveX)/dt; vy=0.6*vy+0.4*(e.clientY-lastMoveY)/dt; }
+  lastMoveT=now; lastMoveX=e.clientX; lastMoveY=e.clientY;
+  let x=Math.max(4, Math.min(window.innerWidth -koll.offsetWidth -4, e.clientX-kdrag.dx));
+  let y=Math.max(4, Math.min(window.innerHeight-koll.offsetHeight-4, e.clientY-kdrag.dy));
+  koll.style.left=x+"px"; koll.style.top=y+"px"; });
+window.addEventListener("pointerup", ()=>{ if(!kdrag) return; koll.classList.remove("dragging"); cloudSync();
+  const now=performance.now(); if(now-lastMoveT>70){ vx=0; vy=0; }
+  const wasMoved=kmoved; kdrag=null;
+  if(wasMoved && Math.hypot(vx,vy)>0.28){ suppressClick=true; fling(); return; }   // schneller Zug -> Wurf
+  setImg(idleImg());
+  if(wasMoved) suppressClick=true; else kollSay(nextLine());
+  scheduleHome(); });
+
+document.addEventListener("click", e=>{
+  if(suppressClick){ suppressClick=false; return; }
+  if(e.target.closest(".habitat")){ walkToCave(); return; }   // in die Höhle -> hinlaufen und sitzen
+  if(e.target.closest("header, #pomo, #kollege, button, a, summary, input, textarea, select, label, .maskable, .reveal, [data-go], .qcard")) return;
+  walkTo(e.clientX, e.clientY, "free");
+});
+
+/* Seitenwechsel über die Chips/Pager -> Kollege rollt ins Bild (Richtung der Navigation) */
+let lastIdx = MODULE.findIndex(m=>m.id===aktiv);
+document.addEventListener("click", e=>{
+  const nav=e.target.closest(".chip[data-id],[data-go]"); if(!nav) return;
+  const id=nav.dataset.id||nav.dataset.go, ni=MODULE.findIndex(m=>m.id===id);
+  if(ni<0 || ni===lastIdx){ lastIdx=ni<0?lastIdx:ni; return; }
+  const dir = ni>lastIdx ? 1 : -1; lastIdx=ni;
+  document.documentElement.classList.remove("testing");   // Tunnel beim Seitenwechsel verlassen
+  rollIn(dir);
+});
+
+let bubT=null;
+function kollSay(t, ms){
+  const r=koll.getBoundingClientRect();
+  koll.classList.toggle("bubR", (r.left + r.width/2) < window.innerWidth/2);  // links -> Blase nach rechts
+  bub.textContent=t; bub.classList.add("show");
+  clearTimeout(bubT); bubT=setTimeout(()=> bub.classList.remove("show"), ms||12000); }
+let _order=[], _oi=0;
+function genLine(){ if(_oi>=_order.length){ _order=LINES.map((_,i)=>i).sort(()=>Math.random()-.5); _oi=0; } return LINES[_order[_oi++]]; }
+function nextLine(){                                 // überwiegend seitenbezogen, sonst allgemein
+  const m=(typeof aktiv!=="undefined")?aktiv:null;
+  const pool = m && MODULE_LINES[m];
+  if(pool && pool.length && Math.random()<0.7) return pool[Math.floor(Math.random()*pool.length)];
+  return genLine();
+}
+
+const PET={
+  reagiere(korrekt, konf){ koll.classList.add("bounce"); setTimeout(()=>koll.classList.remove("bounce"),500);
+    kollSay(korrekt ? pick(REACT_OK) : (konf==="sicher" ? "Du warst dir SICHER — und daneben. Genau die merkst du dir." : pick(REACT_NO)));
+    setTimeout(()=>PET.aktualisiere(), 400); },
+  aktualisiere(){ const f = typeof faelligePool==="function" ? faelligePool().length : 0;
+    $("#koll-badge").textContent=f; koll.dataset.hungry = f>0 ? "1":"0"; }
+};
+PET.aktualisiere();
+setInterval(()=>PET.aktualisiere(), 15000);
+setTimeout(()=> kollSay("Insta Reels aus – jetzt wird geackert.", 10000), 2500);  // Intro beim Laden, 10 s
+// Auf der Sternseite (Karten/Selbsttest) und im Fokus keine automatischen Voicelines — die stören beim Lesen
+setInterval(()=>{ if(focusOn()) return; if(typeof aktiv!=="undefined" && aktiv==="quiz") return; kollSay(nextLine()); }, 60000);
+
+/* Taste 'a': Mitfliegen zu Karten & Fragen an/aus */
+addEventListener("keydown", e=>{
+  if(e.key!=="a" && e.key!=="A") return;
+  const t=e.target; if(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  followMode=!followMode; save("follow", followMode);
+  kollSay(followMode ? "Begleiten: an. Ich komm mit." : "Begleiten: aus. Ich halt mich raus.", 4000);
+});
+
+</script>
+</body>
+</html>
