@@ -213,6 +213,23 @@ figure{margin:0} figcaption{color:var(--muted);font-size:.82rem;margin-top:6px}
   border-radius:10px;padding:8px 0;font:inherit;font-size:.72rem;transition:all .14s}
 .pomo-foot button:hover{color:var(--ink);border-color:var(--signal)}
 .pomo-foot button.on{background:var(--signal);color:#fff;border-color:var(--signal)}
+/* Podcast-Fortschritt */
+#pod-bar{display:none;height:5px;border-radius:3px;background:var(--line);margin:10px 0 3px;cursor:pointer;overflow:hidden}
+#pomo.podon #pod-bar{display:block}
+#pod-prog{height:100%;width:0;background:var(--signal);border-radius:3px}
+#pod-time{display:none;font-size:.66rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+#pomo.podon #pod-time{display:block}
+/* PDF-Download-Karte (Selbsttest-Seite) */
+.dl-card{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink);
+  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow);margin:0 0 22px;transition:border-color .16s,transform .16s}
+.dl-card:hover{border-color:var(--signal);transform:translateY(-1px)}
+.dl-ico{font-size:1.7rem;line-height:1;flex:none}
+.dl-body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.dl-body strong{font-size:1rem}
+.dl-body>span{color:var(--muted);font-size:.82rem}
+.dl-dl{flex:none;font-weight:600;color:#fff;background:var(--signal);border-radius:999px;padding:7px 14px;font-size:.82rem;white-space:nowrap}
+@media(max-width:560px){.dl-dl{display:none}}
 #pomo-panel::before{content:"";position:absolute;left:0;right:0;top:-14px;height:16px}  /* Hover-Brücke: überbrückt die Lücke zur Pill (nicht mehr von overflow abgeschnitten) */
 .pomo-wide{width:100%;margin-top:8px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);
   border-radius:10px;padding:8px 0;font:inherit;font-size:.74rem;transition:all .14s}
@@ -335,9 +352,12 @@ html.focusmode.testing .q{box-shadow:0 12px 34px rgba(51,38,26,.16)}
         <button data-p="5">5</button><button data-p="10">10</button>
       </div>
       <div class="pomo-foot">
-        <button id="pomo-ambient">♪ Ambient</button>
+        <button id="pomo-podcast" title="Podcast · Inklusion im Sport – von Gehirn bis Testosteron">▶ Podcast</button>
         <button id="pomo-backup">Backup ↓</button>
       </div>
+      <div id="pod-bar" title="Zum Springen klicken"><div id="pod-prog"></div></div>
+      <div id="pod-time"></div>
+      <audio id="pod-audio" src="Inklusion_im_Sport_von_Gehirn_bis_Testosteron.m4a" preload="none"></audio>
       <button id="pomo-focus" class="pomo-wide" title="Ganze Seite in den Fokus-Modus (Vignette)">Fokus-Modus</button>
     </div>
   </div>
@@ -452,7 +472,11 @@ try {
    FLIP-DECK + TRAINER-WIRING (Ersatz fuer Basis-Quiz)
    ========================================================================== */
 function deckHTML(){
-  return `<div class="pretest"><h3>Karteikarten</h3>
+  return `<div class="pretest"><a class="dl-card" href="Lernskript_Inklusion_im_Sport.pdf" download>
+      <span class="dl-ico" aria-hidden="true">📄</span>
+      <span class="dl-body"><strong>Lernskript als PDF</strong><span>Alle Zusammenfassungen &amp; 135 Fragen mit Lösungen · 41 Seiten</span></span>
+      <span class="dl-dl">Download ↓</span>
+    </a><h3>Karteikarten</h3>
     <p style="color:var(--muted);font-size:.86rem">Klick eine Karte zum Aufdecken. Sie passt sich der Textlänge an. Danach unten der Selbsttest. <span style="color:var(--signal)">Taste <kbd>a</kbd></span> schaltet das Mitfliegen des Kollegen an/aus.</p>
     <div class="deck">${CARDS.map(c =>
       `<div class="qcard"><div class="qc-front">${esc(c.front)}</div>`+
@@ -785,17 +809,19 @@ document.querySelectorAll("#pomo-pause button").forEach(b=> b.addEventListener("
   if(pmPhase==="pause" && !pmRun) pmRest=PM.pause*60; pmSel(); pmRender(); }));
 pmSel(); pmRender();
 
-let AC=null;
-$("#pomo-ambient").addEventListener("click", e=>{ e.stopPropagation();
-  if(AC){ AC.close(); AC=null; $("#pomo-ambient").classList.remove("on"); $("#pomo-ambient").textContent="♪ Ambient"; return; }
-  AC=new (window.AudioContext||window.webkitAudioContext)();
-  const len=AC.sampleRate*2, buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
-  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
-  const src=AC.createBufferSource(); src.buffer=buf; src.loop=true;
-  const lp=AC.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1000;
-  const g=AC.createGain(); g.gain.value=.08;
-  src.connect(lp).connect(g).connect(AC.destination); src.start();
-  $("#pomo-ambient").classList.add("on"); $("#pomo-ambient").textContent="♪ An"; });
+/* Podcast-Player (ersetzt den Ambient-Generator) */
+const pod=$("#pod-audio"), podBtn=$("#pomo-podcast");
+const podFmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
+podBtn.addEventListener("click", e=>{ e.stopPropagation(); if(pod.paused) pod.play().catch(()=>{}); else pod.pause(); });
+pod.addEventListener("play", ()=>{ podBtn.classList.add("on"); podBtn.textContent="⏸ Podcast"; $("#pomo").classList.add("podon"); });
+pod.addEventListener("pause", ()=>{ podBtn.classList.remove("on"); podBtn.textContent="▶ Podcast"; });
+pod.addEventListener("ended", ()=>{ pod.currentTime=0; });
+pod.addEventListener("timeupdate", ()=>{ const d=pod.duration;
+  if(d) $("#pod-prog").style.width=(100*pod.currentTime/d)+"%";
+  $("#pod-time").textContent=podFmt(pod.currentTime)+" / "+(d?podFmt(d):"…"); });
+$("#pod-bar").addEventListener("click", e=>{ e.stopPropagation(); if(!pod.duration) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  pod.currentTime=Math.min(pod.duration, Math.max(0,(e.clientX-r.left)/r.width)*pod.duration); });
 
 $("#pomo-backup").addEventListener("click", e=>{ e.stopPropagation();
   const dump={ srs:(typeof SRS!=="undefined"?SRS:{}), journal:(typeof JOURNAL!=="undefined"?JOURNAL:[]), log:LOG.d, pm:PM };
