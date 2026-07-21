@@ -222,17 +222,18 @@ figure{margin:0} figcaption{color:var(--muted);font-size:.82rem;margin-top:6px}
 @keyframes pagein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 section.modul{animation:pagein .34s ease both}
 .hero{animation:pagein .34s ease both}
-/* Fokus-Modus: nur der Hintergrund wird dunkel — KEIN Schleier über dem Inhalt.
-   Der Lesebereich bleibt eine helle Fläche, die auf dem dunklen Hintergrund schwebt. */
-html.focusmode,html.focusmode body{background:#1e1610}
-html.focusmode section.modul,html.focusmode .hero{background:var(--bg);border-top:0;
-  border-radius:18px;margin:26px auto;padding-top:40px;padding-bottom:48px;
-  box-shadow:0 30px 80px rgba(0,0,0,.45)}
-html.focusmode header{background:color-mix(in srgb,#1e1610 92%,transparent);opacity:.36;transition:opacity .3s}
+/* Fokus-Modus: nur eine leichte Vignette auf dem HINTERGRUND — kein dunkler Grund, Inhalt unberührt.
+   Die Vignette ist Teil des Body-Backgrounds (kein Overlay), liegt also hinter Text & Karten. */
+html.focusmode body{
+  background-color:var(--bg);
+  background-image:radial-gradient(ellipse 100% 94% at 50% 42%, transparent 58%, rgba(46,35,24,.20) 100%);
+  background-attachment:fixed;background-repeat:no-repeat}
+html.focusmode header{opacity:.42;transition:opacity .3s}
 html.focusmode header:hover{opacity:1}
-html.focusmode .bar strong{color:#efe4d2}
-html.focusmode .bar .chip:not([aria-current="true"]){color:#cdbca3;border-color:#3b3022}
-html.focusmode .toggle{color:#cdbca3;border-color:#3b3022}
+/* Selbsttest: Antwort-Vorschau (Peek) vor der Konfidenz-Wahl */
+.peek{margin-top:12px}
+.peek .opt{cursor:default}
+.opt:disabled{opacity:.72;cursor:default}
 /* ===== Kollege (frei beweglich) ===== */
 #kollege{position:fixed;right:24px;bottom:20px;width:96px;height:118px;z-index:50;
   cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -266,7 +267,7 @@ html.focusmode.testing .trainer > :not(#run){display:none}
 html.focusmode.testing header{opacity:0}
 html.focusmode.testing header:hover{opacity:1}
 html.focusmode.testing #run{max-width:760px;margin:0 auto}
-html.focusmode.testing .q{box-shadow:0 20px 60px rgba(28,20,12,.45)}
+html.focusmode.testing .q{box-shadow:0 12px 34px rgba(51,38,26,.16)}
 /* Idee 4 — Übergangs-Ritual (Atemzug) */
 #focus-rite{position:fixed;inset:0;z-index:60;display:grid;place-items:center;
   background:rgba(20,14,8,.86);opacity:0;transition:opacity .45s;pointer-events:none}
@@ -300,7 +301,6 @@ html.focusmode.testing .q{box-shadow:0 20px 60px rgba(28,20,12,.45)}
   .qcard{padding:15px 16px}
   .opt{padding:13px 12px}
   section.modul{padding:40px 0}
-  html.focusmode section.modul,html.focusmode .hero{padding-left:16px;padding-right:16px;margin:14px auto;border-radius:14px}
 }
 
 </style>
@@ -571,7 +571,7 @@ function startSession(modus){
   else                          items = shuffle([...QUIZ]);
   if (!items.length){ document.getElementById("run").innerHTML =
     `<div class="card">Nichts fällig. Komm morgen wieder — oder nimm „Alle mischen".</div>`; return; }
-  sess = { items, i:0, modus, start:Date.now(), antworten:[], konf:null };
+  sess = { items, i:0, modus, start:Date.now(), antworten:[], konf:null, peek:false };
   document.documentElement.classList.add("testing");
   frage();
   if (modus === "klausur") tickTimer();
@@ -590,12 +590,13 @@ function frage(){
       <p class="kicker">${esc(q.thema)} · ${sess.i+1} / ${sess.items.length}</p>
       <p><strong>${esc(q.frage)}</strong></p>
       ${!klausur && !sess.konf ? `
-        <p style="color:var(--muted);font-size:.82rem">Erst festlegen: Wie sicher bist du?</p>
+        <p style="color:var(--muted);font-size:.82rem">Wie sicher bist du? <span style="opacity:.75">(Tasten q / w / e)</span></p>
         <div class="conf">
-          <button data-konf="sicher">Sicher</button>
-          <button data-konf="unsicher">Unsicher</button>
-          <button data-konf="geraten">Geraten</button>
-        </div>` : `
+          <button data-konf="sicher">Sicher <span class="kbd">q</span></button>
+          <button data-konf="unsicher">Unsicher <span class="kbd">w</span></button>
+          <button data-konf="geraten">Geraten <span class="kbd">e</span></button>
+        </div>
+        ${sess.peek ? `<div class="peek">${q.optionen.map((o,j)=>`<button class="opt" data-j="${j}" disabled><span class="kbd">${j+1}</span> ${esc(o)}</button>`).join("")}<p style="color:var(--muted);font-size:.75rem;margin-top:6px">Antwortmöglichkeiten — jetzt festlegen: q / w / e</p></div>` : `<p style="color:var(--muted);font-size:.78rem;margin-top:8px">Leertaste: Antwortmöglichkeiten schon ansehen</p>`}` : `
         ${q.optionen.map((o,j) =>
           `<button class="opt" data-j="${j}"><span class="kbd">${j+1}</span> ${esc(o)}</button>`).join("")}
         ${!klausur ? `<p style="margin-top:10px"><button class="chip" id="tipp">🛟 Tipp — keine Ahnung?</button></p>` : ""}
@@ -621,7 +622,7 @@ function antwort(j){
   if (typeof PET !== "undefined") PET.reagiere(korrekt, konf);  // Toolbox: Pet reagiert
 
   if (sess.modus === "klausur"){                        // keine Auflösung während der Klausur
-    sess.i++; sess.konf = null; return frage();
+    sess.i++; sess.konf = null; sess.peek = false; return frage();
   }
 
   const run = document.getElementById("run");
@@ -636,7 +637,7 @@ function antwort(j){
     ${q.warum ? `<p style="font-size:.86rem;margin-top:10px">${esc(q.warum)}</p>` : ""}
     <p class="beleg">${esc(q.beleg || "")}</p>
     <p><button class="chip" id="next">Weiter <span class="kbd">Leertaste</span></button></p>`);
-  document.getElementById("next").onclick = () => { sess.i++; sess.konf = null; frage(); };
+  document.getElementById("next").onclick = () => { sess.i++; sess.konf = null; sess.peek = false; frage(); };
 }
 
 /* ---------- Timer ---------- */
@@ -694,11 +695,20 @@ function NOTE(p){
    ========================================================================== */
 document.addEventListener("keydown", e => {
   if (!sess) return;
+  const atKonf = !sess.konf && sess.modus !== "klausur";
+  if (atKonf && !e.repeat){
+    const k = {q:"sicher",w:"unsicher",e:"geraten"}[e.key.toLowerCase()];
+    if (k){ const b = document.querySelector(`[data-konf="${k}"]`); if (b){ e.preventDefault(); b.click(); return; } }
+  }
   if (e.key >= "1" && e.key <= "4"){
     const b = document.querySelector(`.opt[data-j="${+e.key - 1}"]:not([disabled])`);
     if (b) b.click();
   }
-  if (e.code === "Space"){ const n = document.getElementById("next"); if (n){ e.preventDefault(); n.click(); } }
+  if (e.code === "Space"){
+    const n = document.getElementById("next");
+    if (n){ e.preventDefault(); n.click(); }
+    else if (atKonf && !sess.peek){ e.preventDefault(); sess.peek = true; frage(); }
+  }
 });
 
 /* ==========================================================================
