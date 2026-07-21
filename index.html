@@ -599,7 +599,7 @@ function frage(){
         ${sess.peek ? `<div class="peek">${q.optionen.map((o,j)=>`<button class="opt" data-j="${j}" disabled><span class="kbd">${j+1}</span> ${esc(o)}</button>`).join("")}<p style="color:var(--muted);font-size:.75rem;margin-top:6px">Antwortmöglichkeiten — jetzt festlegen: q / w / e</p></div>` : `<p style="color:var(--muted);font-size:.78rem;margin-top:8px">Leertaste: Antwortmöglichkeiten schon ansehen</p>`}` : `
         ${q.optionen.map((o,j) =>
           `<button class="opt" data-j="${j}"><span class="kbd">${j+1}</span> ${esc(o)}</button>`).join("")}
-        ${!klausur ? `<p style="margin-top:10px"><button class="chip" id="tipp">🛟 Tipp — keine Ahnung?</button></p>` : ""}
+        ${!klausur ? `<p style="margin-top:10px"><button class="chip" id="tipp">🛟 Tipp — keine Ahnung? <span class="kbd">r</span></button></p>` : ""}
         <p style="color:var(--muted);font-size:.75rem;margin-top:8px">Tasten 1–4</p>`}
     </div>`;
 
@@ -700,6 +700,7 @@ document.addEventListener("keydown", e => {
     const k = {q:"sicher",w:"unsicher",e:"geraten"}[e.key.toLowerCase()];
     if (k){ const b = document.querySelector(`[data-konf="${k}"]`); if (b){ e.preventDefault(); b.click(); return; } }
   }
+  if ((e.key === "r" || e.key === "R") && !e.repeat){ const t = document.getElementById("tipp"); if (t){ e.preventDefault(); t.click(); return; } }
   if (e.key >= "1" && e.key <= "4"){
     const b = document.querySelector(`.opt[data-j="${+e.key - 1}"]:not([disabled])`);
     if (b) b.click();
