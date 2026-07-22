@@ -14,6 +14,6 @@ Alle Dateien müssen im **selben Ordner** liegen — die Seite lädt die Assets 
 3. Nach ~1 Min erreichbar unter `https://<user>.github.io/<repo>/`.
 
 ## Wichtig — Sichtbarkeit
-Die Seite ist eine **geschlossene Lernfassung** (`noindex`, „nicht zur öffentlichen Verbreitung").
+Die Seite ist eine **geschlossene Lernfassung** 
 `noindex` 
 
